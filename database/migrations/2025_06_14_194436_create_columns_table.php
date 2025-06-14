@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('columns', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('board_id')->constrained()->cascadeOnDelete();
+            $table->string('name');
+            $table->unsignedBigInteger('order')->default(0);
             $table->timestamps();
         });
     }

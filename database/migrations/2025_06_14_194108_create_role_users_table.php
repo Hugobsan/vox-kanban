@@ -12,8 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('role_users', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('role_id')->constrained()->cascadeOnDelete();
+            $table->timestamp('assigned_at')->useCurrent();
+            $table->timestamp('revoked_at')->nullable();
+            $table->timestamp('revoke_in')->nullable();
+            $table->primary(['user_id', 'role_id'], 'role_user_primary_key');
+            $table->index(['user_id', 'role_id'], 'role_user_index');
         });
     }
 
