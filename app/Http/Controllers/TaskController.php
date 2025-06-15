@@ -83,7 +83,35 @@ class TaskController extends Controller
      */
     public function update(UpdateTaskRequest $request, Task $task)
     {
-        //
+        $this->authorize('update', $task->board);
+
+        DB::beginTransaction();
+        try {
+            // Se houver mudança de order, atualizar as demais tasks com valor maior que a nova order
+            if ($request->has('order') && $request->order !== $task->order) {
+                Task::where('column_id', $request->column_id ?? $task->column_id)
+                    ->where('order', '>=', $request->order)
+                    ->where('id', '!=', $task->id)
+                    ->increment('order');
+            }
+
+            // Atualiza a task com os dados validados
+            $task->update($request->validated());
+
+            // Se houver labels, e não for labels já associadas, associa à task
+            if ($request->has('labels') && !empty($request->labels)) {
+                $task->labels()->sync($request->labels);
+            }
+
+            // Recarrega a task com as labels associadas
+            $task->load('labels');
+
+            DB::commit();
+            return $this->respond()->successResponse($task, 'Task updated successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->respond()->errorResponse('Error updating task: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -91,6 +119,10 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        $this->authorize('update', $task->board);
+
+        $task->delete();
+
+        return $this->respond()->successResponse(null, 'Task deleted successfully!');
     }
 }

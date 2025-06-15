@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BoardController;
+use App\Http\Controllers\ColumnController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\TaskController;
 
@@ -23,7 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Rotas de quadros
     Route::apiResource('boards', BoardController::class);
     
-    // Rotas aninhadas - labels de um board específico
+    // labels de um board específico
     Route::apiResource('boards.labels', LabelController::class)->only(['index']);
 
     // Rotas de labels
@@ -31,4 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Rotas de Tasks
     Route::apiResource('tasks', TaskController::class)->except(['edit']);
+
+    // Rotas de Colunas
+    Route::apiResource('boards.columns', ColumnController::class)->except(['edit']);
 });

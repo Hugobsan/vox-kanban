@@ -90,8 +90,9 @@
                                                 </div>
                                                 <div class="col-auto">
                                                     <select class="form-select" id="invite-role">
-                                                        <option value="member">Membro</option>
-                                                        <option value="admin">Administrador</option>
+                                                        <option value="owner">Proprietário</option>
+                                                        <option value="editor">Editor</option>
+                                                        <option value="viewer">Visualizador</option>
                                                     </select>
                                                 </div>
                                                 <div class="col-auto">

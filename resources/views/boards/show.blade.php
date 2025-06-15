@@ -663,7 +663,7 @@ function addColumn() {
     setLoading($submitBtn, true);
     
     $.ajax({
-        url: '/api/columns',
+        url: `/api/boards/${board.id}/columns`,
         method: 'POST',
         headers: {
             'Authorization': 'Bearer ' + token
@@ -820,7 +820,7 @@ function deleteColumn(columnId) {
         const token = localStorage.getItem('auth_token');
         
         $.ajax({
-            url: `/api/columns/${columnId}`,
+            url: `/api/boards/${board.id}/columns/${columnId}`,
             method: 'DELETE',
             headers: {
                 'Authorization': 'Bearer ' + token

@@ -542,7 +542,7 @@ function createColumnElement(column) {
                 </div>
                 ` : ''}
             </div>
-            <div class="kanban-column-body">
+            <div class="kanban-column-body" data-column-id="${column.id}">
                 ${tasksHtml}
                 ${createGhostTask(column.id)}
             </div>
@@ -718,10 +718,14 @@ function initializeSortable() {
         placeholder: 'kanban-card ui-sortable-placeholder',
         tolerance: 'pointer',
         update: function(event, ui) {
-            updateTaskPosition(ui.item);
+            // Get current column ID and position
+            const columnId = ui.item.closest('.kanban-column-body').data('column-id');
+            const newPosition = ui.item.index() + 1;
+            updateTaskPositionAndColumn(ui.item, columnId, newPosition);
         },
         receive: function(event, ui) {
-            updateTaskColumn(ui.item, $(this).data('column-id'));
+            // When task is moved to another column, update is also called
+            // so we don't need to duplicate the logic here
         }
     });
 }
@@ -731,64 +735,71 @@ function updateColumnOrder() {
     $('.kanban-column').each(function(index) {
         const columnId = $(this).data('column-id');
         if (columnId) {
-            columnIds.push(columnId);
+            columnIds.push({ id: columnId, order: index + 1 });
         }
     });
     
-    // Send update request
+    // Send individual update requests for each column
     const token = localStorage.getItem('auth_token');
-    $.ajax({
-        url: `/api/columns/reorder`,
-        method: 'PATCH',
-        data: JSON.stringify({ column_ids: columnIds }),
-        contentType: 'application/json',
-        headers: {
-            'Authorization': 'Bearer ' + token
-        },
-        error: function() {
-            NotificationService.error('Erro ao reordenar colunas.');
-            refreshCurrentBoard();
-        }
+    const updatePromises = columnIds.map(column => {
+        return $.ajax({
+            url: `/api/boards/${currentBoardId}/columns/${column.id}`,
+            method: 'PATCH',
+            data: JSON.stringify({ order: column.order }),
+            contentType: 'application/json',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        });
+    });
+    
+    // Handle all requests
+    $.when(...updatePromises).fail(function() {
+        NotificationService.error('Erro ao reordenar colunas.');
+        refreshCurrentBoard();
     });
 }
 
-function updateTaskPosition(taskItem) {
+function updateTaskPositionAndColumn(taskItem, columnId, position) {
     const taskId = taskItem.data('task-id');
-    const newPosition = taskItem.index() + 1;
+    
+    console.log('Updating task:', { taskId, columnId, position });
     
     const token = localStorage.getItem('auth_token');
     $.ajax({
         url: `/api/tasks/${taskId}`,
         method: 'PATCH',
-        data: JSON.stringify({ order: newPosition }),
+        data: JSON.stringify({ 
+            column_id: columnId,
+            order: position 
+        }),
         contentType: 'application/json',
         headers: {
             'Authorization': 'Bearer ' + token
         },
-        error: function() {
-            NotificationService.error('Erro ao reordenar tarefa.');
-            refreshCurrentBoard();
-        }
-    });
-}
-
-function updateTaskColumn(taskItem, newColumnId) {
-    const taskId = taskItem.data('task-id');
-    
-    const token = localStorage.getItem('auth_token');
-    $.ajax({
-        url: `/api/tasks/${taskId}`,
-        method: 'PATCH',
-        data: JSON.stringify({ column_id: newColumnId }),
-        contentType: 'application/json',
-        headers: {
-            'Authorization': 'Bearer ' + token
+        success: function(response) {
+            console.log('Task updated successfully:', response);
         },
-        error: function() {
+        error: function(xhr) {
+            console.error('Error updating task:', xhr.responseJSON);
             NotificationService.error('Erro ao mover tarefa.');
             refreshCurrentBoard();
         }
     });
+}
+
+// Legacy functions - keeping for backward compatibility if needed elsewhere
+function updateTaskPosition(taskItem) {
+    const taskId = taskItem.data('task-id');
+    const newPosition = taskItem.index() + 1;
+    const columnId = taskItem.closest('.kanban-column-body').data('column-id');
+    
+    updateTaskPositionAndColumn(taskItem, columnId, newPosition);
+}
+
+function updateTaskColumn(taskItem, newColumnId) {
+    const newPosition = taskItem.index() + 1;
+    updateTaskPositionAndColumn(taskItem, newColumnId, newPosition);
 }
 </script>
 @endpush

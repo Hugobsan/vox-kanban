@@ -25,21 +25,12 @@
                                        id="column-color" name="color" value="#6366f1">
                             </div>
                             <div class="col-auto">
-                                <button type="button" class="btn btn-outline-secondary" onclick="resetColumnColor()">
-                                    <span class="material-icons">refresh</span>
+                                <button type="button" class="btn btn-outline-secondary" onclick="generateRandomColumnColor()">
+                                    <span class="material-icons">shuffle</span>
                                 </button>
                             </div>
                         </div>
                         <div class="form-text">Cor para destacar a coluna no quadro.</div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="column-limit" class="form-label">Limite de Tarefas (opcional)</label>
-                        <input type="number" class="form-control" id="column-limit" name="task_limit" 
-                               placeholder="Ex: 5" min="1" max="100">
-                        <div class="form-text">
-                            Limite máximo de tarefas que podem estar nesta coluna ao mesmo tempo.
-                        </div>
                     </div>
                     
                     <div class="form-check">
@@ -92,9 +83,7 @@ function createColumn() {
     const formData = {
         name: $('#column-name').val().trim(),
         color: $('#column-color').val(),
-        task_limit: $('#column-limit').val() || null,
-        auto_complete: $('#column-auto-complete').is(':checked'),
-        board_id: currentBoardId
+        auto_complete: $('#column-auto-complete').is(':checked')
     };
     
     // Validation
@@ -119,7 +108,7 @@ function createColumn() {
     initializeSortable();
     
     $.ajax({
-        url: '/api/columns',
+        url: `/api/boards/${currentBoardId}/columns`,
         method: 'POST',
         data: JSON.stringify(formData),
         contentType: 'application/json',
@@ -163,7 +152,22 @@ function createColumn() {
     });
 }
 
-function resetColumnColor() {
-    $('#column-color').val('#6366f1');
+function generateRandomColumnColor() {
+    const colors = [
+        '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', 
+        '#f43f5e', '#ef4444', '#f97316', '#f59e0b', '#eab308',
+        '#84cc16', '#22c55e', '#10b981', '#14b8a6', '#06b6d4',
+        '#0ea5e9', '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7'
+    ];
+    
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    $('#column-color').val(randomColor);
+    
+    // Add visual feedback
+    const $button = $('button[onclick="generateRandomColumnColor()"]');
+    $button.addClass('btn-success').removeClass('btn-outline-secondary');
+    setTimeout(() => {
+        $button.removeClass('btn-success').addClass('btn-outline-secondary');
+    }, 200);
 }
 </script>
