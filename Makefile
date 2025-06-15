@@ -80,6 +80,7 @@ install: ## Primeira instalação completa
 	$(DOCKER_EXEC) php artisan config:cache
 	$(DOCKER_EXEC) php artisan route:cache
 	$(DOCKER_EXEC) php artisan view:cache
+	$(MAKE) build-assets
 	@echo "✅ Instalação completa concluída!"
 	@echo "📱 Aplicação: http://localhost:8000"
 	@echo "📧 MailHog: http://localhost:8025"

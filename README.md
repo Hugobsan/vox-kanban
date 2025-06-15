@@ -12,6 +12,8 @@
 
 > **Nota:** A infraestrutura Docker Compose utilizada neste projeto foi reaproveitada e adaptada de um projeto pessoal anterior, visando agilidade e robustez no setup do ambiente.
 
+> **Nota:** Criei a branch `continuation` para poder continuar o desenvolvimento do projeto após o prazo de avaliação do desafio. A branch `main` contém o estado final até 15/06/2024 às 11h.
+
 ---
 
 ## 🚀 Tecnologias Utilizadas
