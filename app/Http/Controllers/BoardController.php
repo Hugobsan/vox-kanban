@@ -32,6 +32,7 @@ class BoardController extends Controller
      */
     public function store(StoreBoardRequest $request)
     {
+        $this->authorize('create', Board::class);
         try {
             $user = $request->user();
             

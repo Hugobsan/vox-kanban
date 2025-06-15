@@ -18,9 +18,15 @@ RUN apk update && apk add --no-cache \
     supervisor \
     dcron \
     shadow \
+    autoconf \
+    gcc \
+    g++ \
+    make \
     && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip \
-    && pecl install redis \
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip
+
+# Instalar Redis extension para PHP (conecta ao container Redis)
+RUN pecl install redis-5.3.7 \
     && docker-php-ext-enable redis
 
 # Instalar Composer

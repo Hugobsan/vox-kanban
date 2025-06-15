@@ -89,12 +89,7 @@ services:
 
   # Queue Worker
   queue:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        user: www
-        uid: 1000
+    image: vox-kanban-app:latest
     container_name: vox-kanban-queue
     restart: unless-stopped
     working_dir: /var/www
@@ -125,12 +120,7 @@ services:
 
   # Scheduler (Cron)
   scheduler:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        user: www
-        uid: 1000
+    image: vox-kanban-app:latest
     container_name: vox-kanban-scheduler
     restart: unless-stopped
     working_dir: /var/www
@@ -187,12 +177,7 @@ services:
 
   # Laravel Reverb (WebSockets)
   reverb:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        user: www
-        uid: 1000
+    image: vox-kanban-app:latest
     container_name: vox-kanban-reverb
     restart: unless-stopped
     working_dir: /var/www

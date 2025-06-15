@@ -51,7 +51,7 @@
                 <span>ou</span>
             </div>
             
-            <a href="{{ route('register') }}" class="btn btn-outline-secondary w-100">
+            <a href="{{ route('register') }}" class="btn btn-outline-secondary w-100 ">
                 <span class="material-icons me-2">person_add</span>
                 Criar nova conta
             </a>
@@ -93,24 +93,17 @@ $(document).ready(function() {
             contentType: 'application/json',
             success: function(response) {
                 if (response.success && response.data.token) {
-                    // Store token and user data
                     localStorage.setItem('auth_token', response.data.token);
                     localStorage.setItem('user_data', JSON.stringify(response.data.user));
                     
-                    // Show success message
                     showAlert(response.message || 'Login realizado com sucesso!', 'success');
-                    
-                    // Redirect to dashboard after a short delay
-                    setTimeout(() => {
-                        window.location.href = '/dashboard';
-                    }, 1000);
+                    window.location.href = '/dashboard';
                 } else {
                     showAlert('Resposta inválida do servidor.', 'danger');
                 }
             },
             error: function(xhr) {
                 if (xhr.status === 422) {
-                    // Validation errors
                     if (xhr.responseJSON && xhr.responseJSON.errors) {
                         const errors = Object.values(xhr.responseJSON.errors).flat();
                         showAlert(errors.join('<br>'), 'danger');

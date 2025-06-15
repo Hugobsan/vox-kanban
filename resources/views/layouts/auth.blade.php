@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Vox Kanban - Autenticação')</title>
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    
-    <!-- Custom CSS -->
+
+    <!-- CSS Personalizado de /resources/css/auth.css -->
+    <link href="{{ asset('css/auth.css') }}" rel="stylesheet">
     <style>
         :root {
             --primary-color: #6366f1;
@@ -28,7 +30,7 @@
         body {
             background: linear-gradient(135deg, var(--primary-color) 0%, #8b5cf6 100%);
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .auth-container {
@@ -42,7 +44,8 @@
         .auth-card {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+                0 10px 10px -5px rgb(0 0 0 / 0.04);
             overflow: hidden;
             max-width: 400px;
             width: 100%;
@@ -152,7 +155,7 @@
         }
 
         .divider::before {
-            content: '';
+            content: "";
             position: absolute;
             top: 50%;
             left: 0;
@@ -193,19 +196,19 @@
             .auth-header {
                 padding: 1.5rem;
             }
-            
+
             .auth-header h1 {
                 font-size: 1.5rem;
             }
-            
+
             .auth-body {
                 padding: 1.5rem;
             }
         }
     </style>
-    
     @stack('styles')
 </head>
+
 <body>
     <div class="auth-container">
         @yield('content')
@@ -213,13 +216,12 @@
 
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    
+
     <!-- Base JavaScript -->
     <script>
-        // CSRF Token setup for AJAX
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -233,10 +235,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             `;
-            
+
             $(container).html(alertHtml);
-            
-            // Auto hide after 5 seconds
+
             setTimeout(() => {
                 $('.alert').alert('close');
             }, 5000);
@@ -244,7 +245,7 @@
 
         function handleApiError(xhr) {
             let message = 'Ocorreu um erro inesperado.';
-            
+
             if (xhr.responseJSON) {
                 if (xhr.responseJSON.message) {
                     message = xhr.responseJSON.message;
@@ -253,14 +254,14 @@
                     message = errors.join('<br>');
                 }
             }
-            
+
             showAlert(message, 'danger');
         }
 
         function togglePassword(button) {
             const input = $(button).siblings('input');
             const icon = $(button).find('.material-icons');
-            
+
             if (input.attr('type') === 'password') {
                 input.attr('type', 'text');
                 icon.text('visibility_off');
@@ -272,7 +273,7 @@
 
         function setLoading(button, loading = true) {
             const $btn = $(button);
-            
+
             if (loading) {
                 $btn.addClass('loading-btn').prop('disabled', true);
                 const originalText = $btn.html();
@@ -306,7 +307,8 @@
             }
         });
     </script>
-    
+
     @stack('scripts')
 </body>
+
 </html>
