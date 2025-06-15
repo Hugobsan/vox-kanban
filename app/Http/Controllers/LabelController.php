@@ -5,15 +5,24 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreLabelRequest;
 use App\Http\Requests\UpdateLabelRequest;
 use App\Models\Label;
+use App\Models\Board;
 
 class LabelController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Board $board)
     {
-        //
+        $this->authorize('view', $board);
+
+        try {
+            $labels = $board->labels()->orderBy('name')->get();
+
+            return $this->respond()->successResponse($labels, 'Labels retrieved successfully!');
+        } catch (\Exception $e) {
+            return $this->respond()->errorResponse('Error retrieving labels: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -29,7 +38,16 @@ class LabelController extends Controller
      */
     public function store(StoreLabelRequest $request)
     {
-        //
+        $board = Board::findOrFail($request->board_id);
+        $this->authorize('update', $board);
+
+        try {
+            $label = $board->labels()->create($request->validated());
+
+            return $this->respond()->successResponse($label, 'Label created successfully!', 201);
+        } catch (\Exception $e) {
+            return $this->respond()->errorResponse('Error creating label: ' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -37,7 +55,9 @@ class LabelController extends Controller
      */
     public function show(Label $label)
     {
-        //
+        return $this->respond()->view('label.show', [
+            'label' => $label,
+        ]);
     }
 
     /**

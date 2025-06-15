@@ -14,27 +14,27 @@
                     <div class="col-md-3">
                         <!-- Settings Navigation -->
                         <div class="nav flex-column nav-pills" id="settings-tab" role="tablist">
-                            <button class="nav-link active" id="general-tab" data-bs-toggle="pill" 
+                            <button class="nav-link active d-flex align-items-center text-start" id="general-tab" data-bs-toggle="pill" 
                                     data-bs-target="#general" type="button" role="tab">
                                 <span class="material-icons me-2">info</span>
                                 Geral
                             </button>
-                            <button class="nav-link" id="members-tab" data-bs-toggle="pill" 
+                            <button class="nav-link d-flex align-items-center text-start" id="members-tab" data-bs-toggle="pill" 
                                     data-bs-target="#members" type="button" role="tab">
                                 <span class="material-icons me-2">group</span>
                                 Membros
                             </button>
-                            <button class="nav-link" id="labels-tab" data-bs-toggle="pill" 
+                            <button class="nav-link d-flex align-items-center text-start" id="labels-tab" data-bs-toggle="pill" 
                                     data-bs-target="#labels" type="button" role="tab">
                                 <span class="material-icons me-2">label</span>
                                 Labels
                             </button>
-                            <button class="nav-link" id="automation-tab" data-bs-toggle="pill" 
+                            <button class="nav-link d-flex align-items-center text-start" id="automation-tab" data-bs-toggle="pill" 
                                     data-bs-target="#automation" type="button" role="tab">
                                 <span class="material-icons me-2">smart_toy</span>
                                 Automação
                             </button>
-                            <button class="nav-link text-danger" id="danger-tab" data-bs-toggle="pill" 
+                            <button class="nav-link text-danger d-flex align-items-center text-start" id="danger-tab" data-bs-toggle="pill" 
                                     data-bs-target="#danger" type="button" role="tab">
                                 <span class="material-icons me-2">warning</span>
                                 Zona de Perigo
@@ -141,7 +141,7 @@
                                                            id="label-color" value="#6366f1">
                                                 </div>
                                                 <div class="col-auto">
-                                                    <button type="submit" class="btn btn-primary">Criar</button>
+                                                    <button type="button" class="btn btn-primary" id="btn-criar-label">Criar</button>
                                                     <button type="button" class="btn btn-secondary" onclick="hideCreateLabelForm()">
                                                         Cancelar
                                                     </button>
@@ -251,7 +251,7 @@ $(document).ready(function() {
         inviteMember();
     });
     
-    $('#label-form').on('submit', function(e) {
+    $('#btn-criar-label').on('click', function(e) {
         e.preventDefault();
         createBoardLabel();
     });

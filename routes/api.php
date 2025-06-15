@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BoardController;
+use App\Http\Controllers\LabelController;
 
 // Rotas de autenticação (públicas)
 Route::post('/register', [AuthController::class, 'register']);
@@ -20,4 +21,10 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Rotas de quadros
     Route::apiResource('boards', BoardController::class);
+    
+    // Rotas aninhadas - labels de um board específico
+    Route::apiResource('boards.labels', LabelController::class)->only(['index']);
+
+    // Rotas de labels
+    Route::apiResource('labels', LabelController::class);
 });
