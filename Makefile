@@ -139,3 +139,7 @@ logs-reverb: ## Mostra logs do Reverb
 status: ## Mostra status de todos os serviços
 	@echo "📊 Status dos serviços:"
 	$(DOCKER_COMPOSE) ps
+
+build-assets: ## Faz build dos assets com Node.js
+	$(DOCKER_COMPOSE) run --rm node npm install
+	$(DOCKER_COMPOSE) run --rm node npm run build
