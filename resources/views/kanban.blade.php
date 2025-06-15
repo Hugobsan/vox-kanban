@@ -6,7 +6,6 @@
 
 @section('content')
 <div class="row g-0 vh-100">
-    <!-- Sidebar -->
     <div class="col-md-3 col-lg-2">
         <div class="sidebar p-3">
             <div class="d-flex align-items-center mb-4">
@@ -44,10 +43,8 @@
         </div>
     </div>
     
-    <!-- Main Content -->
     <div class="col-md-9 col-lg-10">
         <div class="h-100 d-flex flex-column">
-            <!-- Header -->
             <div class="p-4 bg-white border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -65,12 +62,9 @@
                 </div>
             </div>
             
-            <!-- Alerts -->
             <div id="alerts-container" class="px-4 pt-3"></div>
             
-            <!-- Board Content -->
             <div class="flex-grow-1 overflow-hidden">
-                <!-- Empty State -->
                 <div id="empty-state" class="h-100 d-flex align-items-center justify-content-center">
                     <div class="text-center">
                         <span class="material-icons mb-3" style="font-size: 4rem; color: #cbd5e1;">view_kanban</span>
@@ -83,16 +77,13 @@
                     </div>
                 </div>
                 
-                <!-- Kanban Board -->
                 <div id="kanban-board" class="h-100 p-4" style="display: none;">
                     <div class="kanban-container h-100">
                         <div class="kanban-columns d-flex gap-3 h-100 overflow-x-auto pb-3" id="columns-container">
-                            <!-- Columns will be loaded here -->
                         </div>
                     </div>
                 </div>
                 
-                <!-- Loading State -->
                 <div id="loading-state" class="h-100 d-flex align-items-center justify-content-center" style="display: none;">
                     <div class="text-center">
                         <div class="spinner-border text-primary mb-3" role="status">
@@ -106,7 +97,7 @@
     </div>
 </div>
 
-<!-- Modals -->
+
 @include('components.modals.create-board')
 @include('components.modals.create-column')
 @include('components.modals.create-task')

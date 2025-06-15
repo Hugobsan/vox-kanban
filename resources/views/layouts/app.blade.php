@@ -7,23 +7,16 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Vox Kanban')</title>
 
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-    <!-- Custom CSS -->
     @vite(['resources/css/app.css'])
-
     @stack('styles')
 
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 </head>
 
 <body>
-    <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
@@ -70,12 +63,10 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main class="@yield('main-class', 'container-fluid')">
         @yield('content')
     </main>
 
-    <!-- Loading Overlay -->
     <div id="loading-overlay" class="position-fixed top-0 start-0 w-100 h-100 d-none"
         style="background: rgba(0,0,0,0.5); z-index: 9999;">
         <div class="d-flex justify-content-center align-items-center h-100">
@@ -84,19 +75,12 @@
             </div>
         </div>
     </div>
-    <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- jQuery UI for drag and drop -->
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-
-    <!-- Vox Kanban Utilities -->
     <script src="{{ asset('js/vox-kanban.js') }}"></script>
 
-    <!-- Base JavaScript -->
     <script>
         $(document).ready(function() {
-            // CSRF Token setup for AJAX
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
@@ -106,7 +90,6 @@
             });
         });
 
-        // Global functions
         function showLoading() {
             $('#loading-overlay').removeClass('d-none');
         }
@@ -125,7 +108,6 @@
 
             $('#alerts-container').html(alertHtml);
 
-            // Auto hide after 5 seconds
             setTimeout(() => {
                 $('.alert').alert('close');
             }, 5000);
@@ -176,7 +158,6 @@
         }
 
         function showProfile() {
-            // TODO: Implementar modal de perfil
             showAlert('Funcionalidade em desenvolvimento', 'info');
         }
         @endauth

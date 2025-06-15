@@ -12,8 +12,8 @@ class StoreColumnRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // Verifica se pode criar colunas no board específico
-        $board = Board::find($this->board_id);
+        // Pega o board a partir do binding do request
+        $board = $this->route('board');
         
         if (!$board) {
             return false;
@@ -77,6 +77,11 @@ class StoreColumnRequest extends FormRequest
         // Define cor padrão se não fornecida
         if (!$this->has('color')) {
             $this->merge(['color' => '#FFFFFF']);
+        }
+
+        // Define board_id a partir do binding do request
+        if (!$this->has('board_id') && $this->route('board')) {
+            $this->merge(['board_id' => $this->route('board')->id]);
         }
         
         // Define ordem automaticamente se não fornecida

@@ -109,21 +109,6 @@ class Task extends Model
                     ->whereNull('completed_at');
     }
 
-    public function scopeAssignedTo(Builder $query, int $userId): Builder
-    {
-        return $query->where('assigned_user_id', $userId);
-    }
-
-    public function scopeOrdered(Builder $query): Builder
-    {
-        return $query->orderBy('order');
-    }
-
-    public function scopeWithLabels(Builder $query): Builder
-    {
-        return $query->with('labels');
-    }
-
     /* Methods */
     public function markAsCompleted(): bool
     {

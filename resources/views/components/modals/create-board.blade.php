@@ -1,4 +1,3 @@
-<!-- Create Board Modal -->
 <div class="modal fade" id="createBoardModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -65,7 +64,6 @@
 
 <script>
 $(document).ready(function() {
-    // Auto-generate key from name
     $('#board-name').on('input', function() {
         const name = $(this).val();
         const key = name
@@ -78,12 +76,10 @@ $(document).ready(function() {
         $('#board-key').val(key);
     });
     
-    // Ensure key is uppercase
     $('#board-key').on('input', function() {
         $(this).val($(this).val().toUpperCase().replace(/[^A-Z]/g, ''));
     });
     
-    // Create board form submission
     $('#create-board-button').on('click', function(e) {
         e.preventDefault();
         createBoard();

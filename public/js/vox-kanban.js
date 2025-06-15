@@ -1,9 +1,3 @@
-/**
- * Vox Kanban - Utility Functions
- * Common JavaScript utilities for the Kanban application
- */
-
-// Global state management
 window.VoxKanban = {
     currentBoardId: null,
     currentBoardData: null,
@@ -16,7 +10,6 @@ window.VoxKanban = {
     },
     
     setupAjax: function() {
-        // CSRF Token setup for AJAX
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
@@ -27,7 +20,6 @@ window.VoxKanban = {
     }
 };
 
-// Task Card Factory
 class TaskCard {
     constructor(task) {
         this.task = task;
@@ -131,7 +123,6 @@ class TaskCard {
     }
 }
 
-// Column Factory
 class KanbanColumn {
     constructor(column) {
         this.column = column;
@@ -183,7 +174,6 @@ class KanbanColumn {
     }
 }
 
-// API Service
 class ApiService {
     constructor() {
         this.baseUrl = '/api';

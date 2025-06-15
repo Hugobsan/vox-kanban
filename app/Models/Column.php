@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Column extends Model
@@ -60,22 +59,6 @@ class Column extends Model
     public function completedTasks(): HasMany
     {
         return $this->hasMany(Task::class)->whereNotNull('completed_at')->orderBy('order');
-    }
-
-    /* Scopes */
-    public function scopeByBoard(Builder $query, int $boardId): Builder
-    {
-        return $query->where('board_id', $boardId);
-    }
-
-    public function scopeOrdered(Builder $query): Builder
-    {
-        return $query->orderBy('order');
-    }
-
-    public function scopeWithTasksCount(Builder $query): Builder
-    {
-        return $query->withCount(['tasks', 'activeTasks', 'completedTasks']);
     }
 
     /* Methods */

@@ -32,7 +32,6 @@ class ColumnController extends Controller
      */
     public function store(StoreColumnRequest $request, Board $board)
     {
-        $this->authorize('update', $board);
         
         try {
             $columnData = $request->validated();
@@ -84,7 +83,7 @@ class ColumnController extends Controller
      */
     public function destroy(Board $board, Column $column)
     {
-        $this->authorize('delete', $board);
+        $this->authorize('update', $board);
 
         try {
             $column->delete();
