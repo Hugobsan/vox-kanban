@@ -191,15 +191,20 @@ function createTask() {
         title: formData.title,
         description: formData.description,
         due_date: formData.due_date,
-        labels: [], // Will be populated after creation
+        labels: getSelectedLabels(), // Get selected labels with their data
         assigned_user_id: formData.assigned_user_id,
+        number: '...',
         completed: false
     };
     
-    const $column = $(`.kanban-column-body[data-column-id="${columnId}"]`);
+    const $column = $(`.kanban-column[data-column-id="${columnId}"] .kanban-column-body`);
     const $ghostCard = $column.find('.ghost-card');
     const $newTask = $(createTaskElement(tempTask));
+    $newTask.addClass('creating'); // Add temporary class for styling
     $ghostCard.before($newTask);
+    
+    // Update task count immediately
+    updateColumnTaskCount(columnId);
     
     $.ajax({
         url: '/api/tasks',
@@ -210,25 +215,34 @@ function createTask() {
             'Authorization': 'Bearer ' + token
         },
         success: function(response) {
-            if (response.success) {
+            if (response.success && response.data) {
                 $('#createTaskModal').modal('hide');
                 $form[0].reset();
                 showAlert(response.message || 'Tarefa criada com sucesso!', 'success');
                 
                 // Replace temp task with real data
-                $newTask.attr('data-task-id', response.data.id);
-                $newTask.attr('onclick', `showTaskDetails(${response.data.id})`);
+                const realTask = response.data;
+                $newTask.removeClass('creating');
+                $newTask.attr('data-task-id', realTask.id);
+                $newTask.attr('onclick', `showTaskDetails(${realTask.id})`);
                 
-                // Update task content with real data
-                $newTask.replaceWith(createTaskElement(response.data));
+                // Update task content with real data including labels
+                const $realTaskElement = $(createTaskElement(realTask));
+                $newTask.replaceWith($realTaskElement);
                 
-                // Update task count in column header
+                // Update task count in column header (in case it changed)
                 updateColumnTaskCount(columnId);
+            } else {
+                // Remove optimistic task if response indicates failure
+                $newTask.remove();
+                updateColumnTaskCount(columnId);
+                showAlert('Erro inesperado ao criar tarefa.', 'danger');
             }
         },
         error: function(xhr) {
             // Remove optimistic task on error
             $newTask.remove();
+            updateColumnTaskCount(columnId);
             
             let message = 'Erro ao criar tarefa.';
             
@@ -359,5 +373,18 @@ function updateColumnTaskCount(columnId) {
     const $column = $(`.kanban-column[data-column-id="${columnId}"]`);
     const taskCount = $column.find('.kanban-card:not(.ghost-card)').length;
     $column.find('.badge').text(taskCount);
+}
+
+function getSelectedLabels() {
+    const selectedLabels = [];
+    $('#task-labels option:selected').each(function() {
+        const $option = $(this);
+        selectedLabels.push({
+            id: $option.val(),
+            name: $option.text(),
+            color: $option.attr('data-color')
+        });
+    });
+    return selectedLabels;
 }
 </script>

@@ -8,6 +8,7 @@ use App\Models\Board;
 use App\Models\Column;
 use App\Models\Task;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
@@ -44,8 +45,13 @@ class TaskController extends Controller
                 $task->labels()->sync($request->labels);
             }
 
+            // Recarrega a task com as labels associadas
+            $task->load('labels');
+
+            DB::commit();
             return $this->respond()->successResponse($task, 'Task created successfully!', 201);
         } catch (\Exception $e) {
+            DB::rollBack();
             return $this->respond()->errorResponse('Error creating task: ' . $e->getMessage(), 500);
         }
     }
@@ -53,11 +59,17 @@ class TaskController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Task $task)
+    public function show(Request $request, Task $task)
     {
-        //
-    }
+        $this->authorize('view', $task->board);
 
+        // Carrega as labels associadas à task
+        $task->load(['labels', 'assignedUser', 'column']);
+
+        return $this->respond()->view('task.show', [
+            'task' => $task,
+        ], $request);
+    }
     /**
      * Show the form for editing the specified resource.
      */

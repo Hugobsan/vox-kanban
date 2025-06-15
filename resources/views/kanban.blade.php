@@ -254,6 +254,31 @@
     opacity: 1;
 }
 
+.kanban-card.creating {
+    opacity: 0.7;
+    border: 2px dashed var(--primary-color);
+    position: relative;
+}
+
+.kanban-card.creating::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--primary-color);
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
 @media (max-width: 768px) {
     .kanban-column {
         width: 250px;
@@ -543,7 +568,7 @@ function createTaskElement(task) {
                 ${task.description ? `<p class="card-text small text-muted mb-2">${escapeHtml(task.description.substring(0, 100))}${task.description.length > 100 ? '...' : ''}</p>` : ''}
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
-                        <small class="text-muted">#${task.number}</small>
+                        <small class="text-muted">#${task.reference}</small>
                     </div>
                     ${task.due_date ? `<small class="text-muted">${formatDate(task.due_date)}</small>` : ''}
                 </div>

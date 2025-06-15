@@ -92,6 +92,7 @@ class BoardController extends Controller
 
         // Load board with all relationships
         $board->load([
+            'columns.tasks',
             'columns.tasks.labels',
             'boardUsers.user',
         ]);

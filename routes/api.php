@@ -30,5 +30,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('labels', LabelController::class);
 
     // Rotas de Tasks
-    Route::apiResource('tasks', TaskController::class)->except(['show', 'edit']);
+    Route::apiResource('tasks', TaskController::class)->except(['edit']);
 });

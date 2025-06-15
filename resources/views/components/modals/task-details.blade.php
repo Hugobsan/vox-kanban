@@ -176,12 +176,10 @@ function loadTaskDetails(taskId) {
             'Authorization': 'Bearer ' + token
         },
         success: function(response) {
-            if (response.success) {
-                currentTaskData = response.data;
-                displayTaskDetails(response.data);
-                loadTaskComments(taskId);
-                loadTaskActivity(taskId);
-            }
+            currentTaskData = response.task;
+            displayTaskDetails(response.task);
+            loadTaskComments(taskId);
+            loadTaskActivity(taskId);
         },
         error: function(xhr) {
             showAlert('Erro ao carregar detalhes da tarefa.', 'danger');
@@ -203,7 +201,11 @@ function displayTaskDetails(task) {
     $('#task-status').text(task.column?.name || 'Indefinido');
     
     // Assignees
-    displayTaskAssignees(task.assignees || []);
+    const assignees = [];
+    if (task.assigned_user) {
+        assignees.push(task.assigned_user);
+    }
+    displayTaskAssignees(assignees);
     
     // Labels
     displayTaskLabels(task.labels || []);
