@@ -20,6 +20,7 @@ class Board extends Model
     protected $fillable = [
         'name',
         'key',
+        'slug',
         'next_task_number',
     ];
 
@@ -28,18 +29,22 @@ class Board extends Model
     ];
 
     /* Mutators & Accessors */
+    public function setNameAttribute($value)
+    {
+        $trimmedValue = trim($value);
+        $this->attributes['name'] = $trimmedValue;
+        
+        // Generate slug if it doesn't exist
+        if (empty($this->attributes['slug'])) {
+            $randomString = Str::random(8);
+            $this->attributes['slug'] = Str::slug($trimmedValue) . '-' . $randomString;
+        }
+    }
+
     protected function name(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => ucfirst($value),
-            set: function ($value) {
-                $trimmedValue = trim($value);
-                if (empty($this->attributes['slug'])) {
-                    $randomString = Str::random(8);
-                    $this->attributes['slug'] = Str::slug($trimmedValue) . '-' . $randomString;
-                }
-                return $trimmedValue;
-            }
+            get: fn ($value) => ucfirst($value)
         );
     }
 

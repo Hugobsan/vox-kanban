@@ -8,6 +8,7 @@ use App\Models\Board;
 use App\Models\Column;
 use App\Enums\RoleInBoard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BoardController extends Controller
 {
@@ -33,6 +34,7 @@ class BoardController extends Controller
     public function store(StoreBoardRequest $request)
     {
         $this->authorize('create', Board::class);
+        DB::beginTransaction();
         try {
             $user = $request->user();
             
@@ -67,9 +69,11 @@ class BoardController extends Controller
             $board->load(['columns', 'boardUsers']);
             $board->loadCount(['columns', 'tasks']);
 
+            DB::commit();
             return $this->respond()->view('boards.store', ['board' => $board], $request, 201);
 
         } catch (\Exception $e) {
+            DB::rollBack();
             return $this->respond()->errorResponse('Erro ao criar quadro: ' . $e->getMessage(), 500);
         }
     }

@@ -59,7 +59,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="button" class="btn btn-primary" id="create-board-button">
                         <span class="material-icons me-2">add</span>
                         Criar Quadro
                     </button>
@@ -90,7 +90,7 @@ $(document).ready(function() {
     });
     
     // Create board form submission
-    $('#create-board-form').on('submit', function(e) {
+    $('#create-board-button').on('click', function(e) {
         e.preventDefault();
         createBoard();
     });
@@ -98,7 +98,7 @@ $(document).ready(function() {
 
 function createBoard() {
     const $form = $('#create-board-form');
-    const $submitBtn = $form.find('button[type="submit"]');
+    const $submitBtn = $('#create-board-button');
     const token = localStorage.getItem('auth_token');
     
     const formData = {
