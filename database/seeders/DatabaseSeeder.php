@@ -14,18 +14,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Primeiro, chama o seeder de roles para garantir que elas existam
+        $this->call([
+            RoleSeeder::class,
+        ]);
 
+        // Depois cria o usuário de teste
         $user = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
-        // $adminRole = Role::where('name', 'admin')->first();
+        
+        // Atribui role de admin ao usuário de teste
         $user->assignRole('admin');
-
-        // Call other seeders
-        $this->call([
-            RoleSeeder::class,
-        ]);
     }
 }

@@ -20,7 +20,7 @@ class RoleSeeder extends Seeder
 
         // Insert roles into the database
         foreach ($roles as $role) {
-            \App\Models\Role::create($role);
+            \App\Models\Role::firstOrCreate($role);
         }
     }
 }

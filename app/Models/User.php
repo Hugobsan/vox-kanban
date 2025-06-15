@@ -6,11 +6,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     protected $fillable = [
         'name',
@@ -135,23 +136,13 @@ class User extends Authenticatable
     }
 
     /**
-     * Verifica se o usuário é administrador.
+     * Obtém os nomes de todas as roles ativas do usuário.
      *
-     * @return bool
+     * @return \Illuminate\Support\Collection
      */
-    public function isAdmin(): bool
+    public function getRoleNames(): \Illuminate\Support\Collection
     {
-        return $this->hasRole('admin');
-    }
-
-    /**
-     * Verifica se o usuário é um usuário comum.
-     *
-     * @return bool
-     */
-    public function isUser(): bool
-    {
-        return $this->hasRole('user');
+        return $this->roles()->pluck('name');
     }
 
     /**
