@@ -62,7 +62,7 @@
                 </label>
             </div>
             
-            <button type="submit" class="btn btn-primary w-100 mb-3">
+            <button type="button" class="btn btn-primary w-100 mb-3" id="register-button">
                 <span class="material-icons me-2">person_add</span>
                 Criar conta
             </button>
@@ -109,11 +109,11 @@ $(document).ready(function() {
         }
     });
     
-    $('#register-form').on('submit', function(e) {
+    $('#register-button').on('click', function(e) {
         e.preventDefault();
         
-        const $form = $(this);
-        const $submitBtn = $form.find('button[type="submit"]');
+        const $form = $(this).closest('form');
+        const $submitBtn = $(this);
         
         // Validate passwords match
         const password = $('#password').val();
