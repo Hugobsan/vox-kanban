@@ -371,9 +371,13 @@ function inviteMember() {
     }
     
     $.ajax({
-        url: `/api/boards/${currentBoardId}/invite`,
+        url: `/api/board-users`,
         method: 'POST',
-        data: JSON.stringify({ email: email, role: role }),
+        data: JSON.stringify({ 
+            email: email, 
+            role_in_board: role,
+            board_id: currentBoardId
+        }),
         contentType: 'application/json',
         headers: {
             'Authorization': 'Bearer ' + token
@@ -381,7 +385,7 @@ function inviteMember() {
         success: function(response) {
             if (response.success) {
                 hideInviteMemberForm();
-                showAlert('Convite enviado com sucesso!', 'success');
+                showAlert(response.message || 'Convite enviado com sucesso!', 'success');
                 loadBoardData(currentBoardId); // Reload board data
             }
         },

@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Enums\RoleInBoard;
+use App\Observers\BoardUserObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
 
+#[ObservedBy([BoardUserObserver::class])]
 class BoardUser extends Model
 {
     /** @use HasFactory<\Database\Factories\BoardUserFactory> */

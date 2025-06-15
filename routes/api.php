@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BoardUserController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\ColumnController;
@@ -35,4 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Rotas de Colunas
     Route::apiResource('boards.columns', ColumnController::class)->except(['edit']);
+    
+    // Rotas de Membros do Quadro
+    Route::apiResource('board-users', BoardUserController::class)->except(['edit']);
 });
