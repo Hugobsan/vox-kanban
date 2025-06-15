@@ -23,14 +23,12 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password),
             ]);
 
-            // Atribuir roles se fornecidas
             if ($request->has('roles') && !empty($request->roles)) {
                 $roleNames = \App\Models\Role::whereIn('id', $request->roles)->pluck('name');
                 foreach ($roleNames as $roleName) {
                     $user->assignRole($roleName);
                 }
             } else {
-                // Se não há roles especificadas, atribuir role 'user' por padrão
                 $user->assignRole('user');
             }
 

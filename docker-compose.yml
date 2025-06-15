@@ -1,0 +1,251 @@
+version: '3.8'
+
+services:
+  # Aplicação Laravel
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        user: www
+        uid: 1000
+    container_name: vox-kanban-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - vox-kanban
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=vox_kanban
+      - DB_USERNAME=vox_user
+      - DB_PASSWORD=vox_password
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=null
+      - REDIS_PORT=6379
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=mailhog
+      - MAIL_PORT=1025
+      - MAIL_USERNAME=null
+      - MAIL_PASSWORD=null
+      - MAIL_ENCRYPTION=null
+
+  # Servidor Web (Nginx)
+  webserver:
+    image: nginx:alpine
+    container_name: vox-kanban-webserver
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - vox-kanban
+    depends_on:
+      - app
+
+  # Banco de Dados PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: vox-kanban-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: vox_kanban
+      POSTGRES_USER: vox_user
+      POSTGRES_PASSWORD: vox_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - vox-kanban
+
+  # Redis (Cache e Sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: vox-kanban-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - vox-kanban
+
+  # Queue Worker
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        user: www
+        uid: 1000
+    container_name: vox-kanban-queue
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - vox-kanban
+    depends_on:
+      - postgres
+      - redis
+      - app
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=vox_kanban
+      - DB_USERNAME=vox_user
+      - DB_PASSWORD=vox_password
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=null
+      - REDIS_PORT=6379
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+
+  # Scheduler (Cron)
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        user: www
+        uid: 1000
+    container_name: vox-kanban-scheduler
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - vox-kanban
+    depends_on:
+      - postgres
+      - redis
+      - app
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=vox_kanban
+      - DB_USERNAME=vox_user
+      - DB_PASSWORD=vox_password
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=null
+      - REDIS_PORT=6379
+    command: sh -c "while true; do php artisan schedule:run >> /var/log/cron.log 2>&1; sleep 60; done"
+
+  # MailHog (Servidor de Email para Desenvolvimento)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: vox-kanban-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - vox-kanban
+
+  # Node.js para Assets (Vite)
+  node:
+    image: node:18-alpine
+    container_name: vox-kanban-node
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    ports:
+      - "5173:5173"  # Vite dev server
+    networks:
+      - vox-kanban
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    profiles:
+      - dev  # Only run with --profile dev
+
+  # Laravel Reverb (WebSockets)
+  reverb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        user: www
+        uid: 1000
+    container_name: vox-kanban-reverb
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    ports:
+      - "8080:8080"  # WebSocket server
+    networks:
+      - vox-kanban
+    depends_on:
+      - postgres
+      - redis
+      - app
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=vox_kanban
+      - DB_USERNAME=vox_user
+      - DB_PASSWORD=vox_password
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=null
+      - REDIS_PORT=6379
+      - REVERB_APP_ID=vox-kanban
+      - REVERB_APP_KEY=local-key
+      - REVERB_APP_SECRET=local-secret
+      - REVERB_HOST=0.0.0.0
+      - REVERB_PORT=8080
+      - REVERB_SCHEME=http
+    # Comando tolerante a falhas - só executa se o Reverb estiver instalado
+    command: >
+      sh -c '
+      if php artisan list | grep -q "reverb:start"; then
+        echo "Laravel Reverb encontrado, iniciando servidor WebSocket...";
+        php artisan reverb:start --host=0.0.0.0 --port=8080 --verbose;
+      else
+        echo "Laravel Reverb não está instalado. Container ficará aguardando...";
+      fi
+      '
+    profiles:
+      - reverb  # Only run with --profile reverb
+
+networks:
+  vox-kanban:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

@@ -57,7 +57,7 @@ class User extends Authenticatable
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function roles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany 
+    public function roles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id');
     }
@@ -72,7 +72,7 @@ class User extends Authenticatable
     public function assignRole(string $roleName, $expiresAt = null): bool
     {
         $role = Role::findByName($roleName);
-        
+
         if (!$role) {
             return false;
         }
@@ -108,7 +108,7 @@ class User extends Authenticatable
     public function removeRole(string $roleName): bool
     {
         $role = Role::findByName($roleName);
-        
+
         if (!$role) {
             return false;
         }
@@ -169,5 +169,14 @@ class User extends Authenticatable
     public function assignedTasks(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Task::class, 'assigned_user_id');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+    public function isUser(): bool
+    {
+        return $this->hasRole('user');
     }
 }

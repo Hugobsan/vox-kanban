@@ -1,0 +1,653 @@
+@extends('layouts.app')
+
+@section('title', 'Dashboard - Vox Kanban')
+
+@section('main-class', 'container-fluid p-0')
+
+@section('content')
+<div class="row g-0 min-vh-100">
+    <!-- Sidebar -->
+    <div class="col-md-3 col-lg-2">
+        <div class="sidebar p-3">
+            <div class="d-flex align-items-center mb-4">
+                <span class="material-icons me-2">dashboard</span>
+                <h5 class="mb-0">Dashboard</h5>
+            </div>
+            
+            <!-- Board Selector -->
+            <div class="mb-4">
+                <label class="form-label text-white-50 small">QUADRO ATUAL</label>
+                <select class="form-select" id="board-selector" onchange="selectBoard()">
+                    <option value="">Selecione um quadro...</option>
+                </select>
+            </div>
+            
+            <nav class="nav flex-column">
+                <a class="nav-link" href="#" onclick="showCreateBoardModal()">
+                    <span class="material-icons me-2">add</span>
+                    Novo Quadro
+                </a>
+                <a class="nav-link" href="#" onclick="refreshCurrentBoard()">
+                    <span class="material-icons me-2">refresh</span>
+                    Atualizar
+                </a>
+                <hr class="my-3 opacity-25">
+                <a class="nav-link" href="#" onclick="showArchivedBoards()">
+                    <span class="material-icons me-2">archive</span>
+                    Arquivados
+                </a>
+                <a class="nav-link" href="#" onclick="showBoardSettings()" id="board-settings-link" style="display: none;">
+                    <span class="material-icons me-2">settings</span>
+                    Configurações
+                </a>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="col-md-9 col-lg-10">
+        <div class="h-100 d-flex flex-column">
+            <!-- Header -->
+            <div class="p-4 bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-1" id="board-title">Vox Kanban</h2>
+                        <p class="text-muted mb-0" id="board-description">Selecione um quadro para começar</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary" onclick="toggleBoardView()" id="view-toggle" style="display: none;">
+                            <span class="material-icons me-2">view_list</span>
+                            Lista
+                        </button>
+                        <button class="btn btn-light" onclick="showBoardSettings()" id="board-settings-btn" style="display: none;">
+                            <span class="material-icons">settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alerts -->
+            <div id="alerts-container" class="px-4 pt-3"></div>
+            
+            <!-- Board Content -->
+            <div class="flex-grow-1 overflow-hidden">
+                <!-- Empty State -->
+                <div id="empty-state" class="h-100 d-flex align-items-center justify-content-center">
+                    <div class="text-center">
+                        <span class="material-icons mb-3" style="font-size: 4rem; color: #cbd5e1;">view_kanban</span>
+                        <h4 class="text-muted mb-3">Nenhum quadro selecionado</h4>
+                        <p class="text-muted mb-4">Selecione um quadro existente ou crie um novo para começar.</p>
+                        <button class="btn btn-primary" onclick="showCreateBoardModal()">
+                            <span class="material-icons me-2">add</span>
+                            Criar Primeiro Quadro
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Kanban Board -->
+                <div id="kanban-board" class="h-100 p-4" style="display: none;">
+                    <div class="kanban-container h-100">
+                        <div class="kanban-columns d-flex gap-3 h-100 overflow-x-auto pb-3" id="columns-container">
+                            <!-- Columns will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="loading-state" class="h-100 d-flex align-items-center justify-content-center" style="display: none;">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                        <p class="text-muted">Carregando quadro...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+@include('components.modals.create-board')
+@include('components.modals.create-column')
+@include('components.modals.create-task')
+@include('components.modals.task-details')
+@include('components.modals.board-settings')
+
+@endsection
+
+@push('styles')
+<style>
+.kanban-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.kanban-columns {
+    min-width: max-content;
+    height: 100%;
+}
+
+.kanban-column {
+    width: 280px;
+    min-width: 280px;
+    background-color: #f1f5f9;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+}
+
+.kanban-column-header {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.kanban-column-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    min-height: 200px;
+}
+
+.kanban-card {
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    cursor: move;
+    border: 2px solid transparent;
+}
+
+.kanban-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.3);
+}
+
+.kanban-card.ui-sortable-helper {
+    transform: rotate(5deg);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+}
+
+.kanban-card.ui-sortable-placeholder {
+    background: #e2e8f0;
+    border: 2px dashed #cbd5e1;
+    height: 80px;
+}
+
+.ghost-card {
+    border: 2px dashed #cbd5e1;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ghost-card:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(99, 102, 241, 0.05);
+    transform: none;
+    box-shadow: none;
+}
+
+.ghost-column {
+    width: 280px;
+    min-width: 280px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #64748b;
+    background: transparent;
+}
+
+.ghost-column:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.task-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.task-label {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 12px;
+    color: white;
+    font-weight: 500;
+}
+
+.task-priority {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.priority-low { background-color: #10b981; }
+.priority-medium { background-color: #f59e0b; }
+.priority-high { background-color: #ef4444; }
+
+.column-handle {
+    cursor: move;
+    color: #64748b;
+}
+
+.column-handle:hover {
+    color: var(--primary-color);
+}
+
+.sortable-placeholder {
+    border: 2px dashed var(--primary-color);
+    background: rgba(99, 102, 241, 0.1);
+    margin: 0 8px;
+    border-radius: 8px;
+}
+
+.task-dropdown {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.kanban-card:hover .task-dropdown {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .kanban-column {
+        width: 250px;
+        min-width: 250px;
+    }
+    
+    .ghost-column {
+        width: 250px;
+        min-width: 250px;
+    }
+}
+</style>
+@endpush
+
+@push('scripts')
+<script>
+let currentBoardId = null;
+let currentBoardData = null;
+let isOwner = false;
+
+$(document).ready(function() {
+    loadUserBoards();
+    initializeSortable();
+    
+    // Check for board ID in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const boardId = urlParams.get('board');
+    if (boardId) {
+        selectBoardById(boardId);
+    }
+});
+
+function loadUserBoards() {
+    const token = localStorage.getItem('auth_token');
+    
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+    
+    $.ajax({
+        url: '/api/boards',
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        success: function(response) {
+            if (response.success) {
+                populateBoardSelector(response.data);
+            }
+        },
+        error: function(xhr) {
+            if (xhr.status === 401) {
+                localStorage.removeItem('auth_token');
+                window.location.href = '/login';
+            } else {
+                NotificationService.error('Erro ao carregar quadros.');
+            }
+        }
+    });
+}
+
+function populateBoardSelector(boards) {
+    const $selector = $('#board-selector');
+    $selector.empty().append('<option value="">Selecione um quadro...</option>');
+    
+    boards.forEach(board => {
+        $selector.append(`<option value="${board.id}">${escapeHtml(board.name)}</option>`);
+    });
+}
+
+function selectBoard() {
+    const boardId = $('#board-selector').val();
+    if (boardId) {
+        selectBoardById(boardId);
+    } else {
+        showEmptyState();
+    }
+}
+
+function selectBoardById(boardId) {
+    if (currentBoardId === boardId) return;
+    
+    currentBoardId = boardId;
+    $('#board-selector').val(boardId);
+    
+    showLoadingState();
+    loadBoardData(boardId);
+}
+
+function loadBoardData(boardId) {
+    const token = localStorage.getItem('auth_token');
+    
+    $.ajax({
+        url: `/api/boards/${boardId}`,
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        success: function(response) {
+            if (response.success) {
+                currentBoardData = response.data;
+                isOwner = checkIfOwner(response.data);
+                displayBoard(response.data);
+                updateUrlWithBoard(boardId);
+            }
+        },
+        error: function(xhr) {
+            NotificationService.error('Erro ao carregar dados do quadro.');
+            showEmptyState();
+        },
+        complete: function() {
+            hideLoadingState();
+        }
+    });
+}
+
+function checkIfOwner(boardData) {
+    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+    const userId = userData.id;
+    
+    return boardData.board_users?.some(bu => 
+        bu.user_id === userId && bu.role_in_board === 'owner'
+    ) || false;
+}
+
+function displayBoard(boardData) {
+    // Update header
+    $('#board-title').text(boardData.name);
+    $('#board-description').text(boardData.description || 'Sem descrição');
+    
+    // Show board elements
+    $('#board-settings-btn, #view-toggle, #board-settings-link').toggle(isOwner);
+    
+    // Display columns
+    displayColumns(boardData.columns || []);
+    
+    // Show board
+    showBoardState();
+}
+
+function displayColumns(columns) {
+    const $container = $('#columns-container');
+    $container.empty();
+    
+    // Sort columns by order
+    columns.sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    // Add existing columns using KanbanColumn class
+    columns.forEach(column => {
+        const columnElement = new KanbanColumn(column).render();
+        $container.append(columnElement);
+    });
+    
+    // Add ghost column for creating new columns
+    $container.append(createGhostColumn());
+    
+    // Reinitialize sortable
+    initializeSortable();
+}
+
+function createColumnElement(column) {
+    return new KanbanColumn(column).render();
+}
+
+function createTaskElement(task) {
+    return new TaskCard(task).render();
+}
+
+function createGhostTask(columnId) {
+    return `
+        <div class="kanban-card ghost-card d-flex align-items-center justify-content-center" 
+             style="min-height: 60px;" onclick="showCreateTaskModal(${columnId})">
+            <div class="text-center">
+                <span class="material-icons mb-1">add</span>
+                <div class="small">Adicionar tarefa</div>
+            </div>
+        </div>
+    `;
+}
+
+function createGhostColumn() {
+    return `
+        <div class="ghost-column" onclick="showCreateColumnModal()">
+            <div class="text-center">
+                <span class="material-icons mb-2" style="font-size: 2rem;">add</span>
+                <div>Adicionar coluna</div>
+            </div>
+        </div>
+    `;
+}
+
+function showEmptyState() {
+    $('#empty-state').show();
+    $('#kanban-board, #loading-state').hide();
+    $('#board-title').text('Vox Kanban');
+    $('#board-description').text('Selecione um quadro para começar');
+    $('#board-settings-btn, #view-toggle, #board-settings-link').hide();
+    currentBoardId = null;
+    currentBoardData = null;
+}
+
+function showBoardState() {
+    $('#kanban-board').show();
+    $('#empty-state, #loading-state').hide();
+}
+
+function showLoadingState() {
+    $('#loading-state').show();
+    $('#empty-state, #kanban-board').hide();
+}
+
+function hideLoadingState() {
+    $('#loading-state').hide();
+}
+
+function updateUrlWithBoard(boardId) {
+    const url = new URL(window.location);
+    url.searchParams.set('board', boardId);
+    history.replaceState(null, '', url);
+}
+
+function refreshCurrentBoard() {
+    if (currentBoardId) {
+        loadBoardData(currentBoardId);
+    } else {
+        loadUserBoards();
+    }
+}
+
+// Modal functions
+function showCreateBoardModal() {
+    $('#createBoardModal').modal('show');
+}
+
+function showCreateColumnModal() {
+    if (!currentBoardId) {
+        showAlert('Selecione um quadro primeiro.', 'warning');
+        return;
+    }
+    $('#createColumnModal').modal('show');
+}
+
+function showCreateTaskModal(columnId) {
+    $('#createTaskModal').modal('show');
+    $('#task-column-id').val(columnId);
+}
+
+function showTaskDetails(taskId) {
+    // Implementation will be in task-details modal
+    $('#taskDetailsModal').modal('show');
+    loadTaskDetails(taskId);
+}
+
+function showBoardSettings() {
+    if (!isOwner) {
+        showAlert('Apenas o proprietário pode acessar as configurações.', 'warning');
+        return;
+    }
+    $('#boardSettingsModal').modal('show');
+}
+
+// Utility functions
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+}
+
+function showAlert(message, type = 'info') {
+    const alertHtml = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    $('#alerts-container').html(alertHtml);
+    
+    setTimeout(() => {
+        $('.alert').alert('close');
+    }, 5000);
+}
+
+// Initialize sortable functionality
+function initializeSortable() {
+    // Column sorting
+    $('#columns-container').sortable({
+        items: '.kanban-column',
+        handle: '.column-handle',
+        placeholder: 'sortable-placeholder',
+        tolerance: 'pointer',
+        update: function(event, ui) {
+            updateColumnOrder();
+        }
+    });
+    
+    // Task sorting within columns
+    $('.kanban-column-body').sortable({
+        connectWith: '.kanban-column-body',
+        items: '.kanban-card:not(.ghost-card)',
+        placeholder: 'kanban-card ui-sortable-placeholder',
+        tolerance: 'pointer',
+        update: function(event, ui) {
+            updateTaskPosition(ui.item);
+        },
+        receive: function(event, ui) {
+            updateTaskColumn(ui.item, $(this).data('column-id'));
+        }
+    });
+}
+
+function updateColumnOrder() {
+    const columnIds = [];
+    $('.kanban-column').each(function(index) {
+        const columnId = $(this).data('column-id');
+        if (columnId) {
+            columnIds.push(columnId);
+        }
+    });
+    
+    // Send update request
+    const token = localStorage.getItem('auth_token');
+    $.ajax({
+        url: `/api/columns/reorder`,
+        method: 'PATCH',
+        data: JSON.stringify({ column_ids: columnIds }),
+        contentType: 'application/json',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        error: function() {
+            NotificationService.error('Erro ao reordenar colunas.');
+            refreshCurrentBoard();
+        }
+    });
+}
+
+function updateTaskPosition(taskItem) {
+    const taskId = taskItem.data('task-id');
+    const newPosition = taskItem.index() + 1;
+    
+    const token = localStorage.getItem('auth_token');
+    $.ajax({
+        url: `/api/tasks/${taskId}`,
+        method: 'PATCH',
+        data: JSON.stringify({ order: newPosition }),
+        contentType: 'application/json',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        error: function() {
+            NotificationService.error('Erro ao reordenar tarefa.');
+            refreshCurrentBoard();
+        }
+    });
+}
+
+function updateTaskColumn(taskItem, newColumnId) {
+    const taskId = taskItem.data('task-id');
+    
+    const token = localStorage.getItem('auth_token');
+    $.ajax({
+        url: `/api/tasks/${taskId}`,
+        method: 'PATCH',
+        data: JSON.stringify({ column_id: newColumnId }),
+        contentType: 'application/json',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        error: function() {
+            NotificationService.error('Erro ao mover tarefa.');
+            refreshCurrentBoard();
+        }
+    });
+}
+</script>
+@endpush
