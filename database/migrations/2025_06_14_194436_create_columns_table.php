@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('board_id')->constrained()->cascadeOnDelete();
             $table->string('name');
+            $table->string('color')->default('#FFFFFF');
             $table->unsignedBigInteger('order')->default(0);
             $table->timestamps();
         });

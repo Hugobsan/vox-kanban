@@ -12,15 +12,10 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        // Define the roles to be created
+        // Define the roles to be created (apenas user e admin)
         $roles = [
             ['name' => 'admin'],
-            ['name' => 'moderator'],
-            ['name' => 'support'],
-            ['name' => 'finance'],
             ['name' => 'user'],
-            ['name' => 'premium'],
-            ['name' => 'banned']
         ];
 
         // Insert roles into the database

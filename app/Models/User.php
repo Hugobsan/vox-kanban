@@ -133,4 +133,50 @@ class User extends Authenticatable
     {
         return $this->roles()->where('name', $roleName)->exists();
     }
+
+    /**
+     * Verifica se o usuário é administrador.
+     *
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Verifica se o usuário é um usuário comum.
+     *
+     * @return bool
+     */
+    public function isUser(): bool
+    {
+        return $this->hasRole('user');
+    }
+
+    /**
+     * Os boards que pertencem ao usuário.
+     */
+    public function boards(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Board::class, 'board_users')
+            ->withPivot('role_in_board')
+            ->withTimestamps();
+    }
+
+    /**
+     * As associações do usuário aos boards.
+     */
+    public function boardUsers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BoardUser::class);
+    }
+
+    /**
+     * As tasks atribuídas ao usuário.
+     */
+    public function assignedTasks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Task::class, 'assigned_user_id');
+    }
 }

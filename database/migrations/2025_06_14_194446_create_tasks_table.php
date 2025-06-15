@@ -14,16 +14,17 @@ return new class extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('column_id')->constrained()->cascadeOnDelete();
-            $table->string('reference')->unique();
+            $table->string('reference')->nullable()->unique();
             $table->string('title');
             $table->text('description')->nullable();
             $table->unsignedBigInteger('order')->default(0);
-            $table->unique(['column_id', 'order'], 'task_column_order_unique');
             $table->foreignId('assigned_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('due_date')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->softDeletes();
             $table->timestamps();
+
+            $table->unique(['column_id', 'order', 'deleted_at'], 'task_column_order_unique');
         });
     }
 

@@ -4,7 +4,7 @@ namespace App\Policies;
 
 use App\Models\BoardUser;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Enums\RoleInBoard;
 
 class BoardUserPolicy
 {
@@ -13,7 +13,7 @@ class BoardUserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->isAdmin() || $user->isUser();
     }
 
     /**
@@ -21,7 +21,13 @@ class BoardUserPolicy
      */
     public function view(User $user, BoardUser $boardUser): bool
     {
-        return false;
+        // Admin pode ver qualquer associação
+        if ($user->isAdmin()) {
+            return true;
+        }
+        
+        // Usuário pode ver se for do mesmo board
+        return $boardUser->board->hasUser($user->id);
     }
 
     /**
@@ -29,7 +35,7 @@ class BoardUserPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->isAdmin() || $user->isUser();
     }
 
     /**
@@ -37,7 +43,14 @@ class BoardUserPolicy
      */
     public function update(User $user, BoardUser $boardUser): bool
     {
-        return false;
+        // Admin pode editar qualquer associação
+        if ($user->isAdmin()) {
+            return true;
+        }
+        
+        // Apenas owners podem alterar roles de usuários
+        $role = $boardUser->board->getUserRole($user->id);
+        return $role === RoleInBoard::Owner;
     }
 
     /**
@@ -45,7 +58,19 @@ class BoardUserPolicy
      */
     public function delete(User $user, BoardUser $boardUser): bool
     {
-        return false;
+        // Admin pode remover qualquer associação
+        if ($user->isAdmin()) {
+            return true;
+        }
+        
+        // Owner pode remover qualquer usuário
+        $role = $boardUser->board->getUserRole($user->id);
+        if ($role === RoleInBoard::Owner) {
+            return true;
+        }
+        
+        // Usuário pode remover a si mesmo do board
+        return $boardUser->user_id === $user->id;
     }
 
     /**
@@ -53,7 +78,13 @@ class BoardUserPolicy
      */
     public function restore(User $user, BoardUser $boardUser): bool
     {
-        return false;
+        // Apenas admins e owners podem restaurar
+        if ($user->isAdmin()) {
+            return true;
+        }
+        
+        $role = $boardUser->board->getUserRole($user->id);
+        return $role === RoleInBoard::Owner;
     }
 
     /**
@@ -61,6 +92,6 @@ class BoardUserPolicy
      */
     public function forceDelete(User $user, BoardUser $boardUser): bool
     {
-        return false;
+        return $user->isAdmin();
     }
 }
