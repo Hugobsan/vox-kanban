@@ -10,9 +10,6 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $this->authorize('viewAny', User::class);
@@ -24,12 +21,9 @@ class UserController extends Controller
             })
             ->paginate(15);
 
-        return $this->respond()->successResponse($users, 'Lista de usuários.');
+        return $this->respond()->view('users.index', ['users' => $users], $request);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreUserRequest $request)
     {
         try {
@@ -39,37 +33,22 @@ class UserController extends Controller
                 'password' => Hash::make($request->password),
             ]);
 
-            // Atribuir roles se especificadas
-            if ($request->has('roles') && !empty($request->roles)) {
-                $roleNames = is_array($request->roles) ? $request->roles : [$request->roles];
-                foreach ($roleNames as $roleName) {
-                    $user->assignRole($roleName);
-                }
-            } else {
-                // Se não há roles especificadas, atribuir role 'user' por padrão
-                $user->assignRole('user');
-            }
+            $this->assignRolesToUser($user, $request->roles);
 
-            return $this->respond()->successResponse($user->load('roles'), 'Usuário criado com sucesso!', 201);
+            return $this->respond()->view('users.create', ['user' => $user->load('roles')], $request, 201);
 
         } catch (\Exception $e) {
             return $this->respond()->errorResponse('Erro ao criar usuário: ' . $e->getMessage(), 500);
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
+    public function show(User $user, Request $request)
     {
         $this->authorize('view', $user);
 
-        return $this->respond()->successResponse($user->load('roles'), 'Dados do usuário.');
+        return $this->respond()->view('users.show', ['user' => $user->load('roles')], $request);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateUserRequest $request, User $user)
     {
         try {
@@ -78,51 +57,60 @@ class UserController extends Controller
                 'email' => $request->email,
             ];
 
-            // Atualizar senha apenas se fornecida
             if ($request->filled('password')) {
                 $data['password'] = Hash::make($request->password);
             }
 
             $user->update($data);
 
-            // Atualizar roles se fornecidas
             if ($request->has('roles')) {
-                // Remover todas as roles atuais
-                foreach ($user->roles as $role) {
-                    $user->removeRole($role->name);
-                }
-
-                // Atribuir novas roles
-                if (!empty($request->roles)) {
-                    $roleNames = is_array($request->roles) ? $request->roles : [$request->roles];
-                    foreach ($roleNames as $roleName) {
-                        $user->assignRole($roleName);
-                    }
-                } else {
-                    // Se não há roles especificadas, atribuir role 'user' por padrão
-                    $user->assignRole('user');
-                }
+                $this->updateUserRoles($user, $request->roles);
             }
 
-            return $this->respond()->successResponse($user->fresh()->load('roles'), 'Usuário atualizado com sucesso!');
+            return $this->respond()->view('users.edit', ['user' => $user->fresh()->load('roles')], $request);
 
         } catch (\Exception $e) {
             return $this->respond()->errorResponse('Erro ao atualizar usuário: ' . $e->getMessage(), 500);
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(User $user)
+    public function destroy(User $user, Request $request)
     {
         $this->authorize('delete', $user);
 
         try {
             $user->delete();
-            return $this->respond()->successResponse(null, 'Usuário removido com sucesso!');
+            return $this->respond()->view('users.index', ['message' => 'Usuário removido com sucesso!'], $request);
         } catch (\Exception $e) {
             return $this->respond()->errorResponse('Erro ao remover usuário: ' . $e->getMessage(), 500);
+        }
+    }
+
+    private function assignRolesToUser(User $user, $roles): void
+    {
+        if (!empty($roles)) {
+            $roleNames = is_array($roles) ? $roles : [$roles];
+            foreach ($roleNames as $roleName) {
+                $user->assignRole($roleName);
+            }
+        } else {
+            $user->assignRole('user');
+        }
+    }
+
+    private function updateUserRoles(User $user, $roles): void
+    {
+        foreach ($user->roles as $role) {
+            $user->removeRole($role->name);
+        }
+
+        if (!empty($roles)) {
+            $roleNames = is_array($roles) ? $roles : [$roles];
+            foreach ($roleNames as $roleName) {
+                $user->assignRole($roleName);
+            }
+        } else {
+            $user->assignRole('user');
         }
     }
 }
