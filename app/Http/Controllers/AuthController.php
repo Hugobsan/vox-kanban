@@ -44,6 +44,10 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        logger()->info('Login attempt', [
+            'email' => $request->email,
+            'ip' => $request->ip(),
+        ]);
         $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],

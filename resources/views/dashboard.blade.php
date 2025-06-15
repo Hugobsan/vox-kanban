@@ -9,7 +9,7 @@
     <!-- Sidebar -->
     <div class="col-md-3 col-lg-2">
         <div class="sidebar p-3">
-            <div class="d-flex align-items-center mb-4">
+            <div class="d-flex align-items-center mb-4 text-white">
                 <span class="material-icons me-2">dashboard</span>
                 <h5 class="mb-0">Dashboard</h5>
             </div>

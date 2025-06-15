@@ -42,7 +42,7 @@
                 </label>
             </div>
             
-            <button type="submit" class="btn btn-primary w-100 mb-3">
+            <button type="button" class="btn btn-primary w-100 mb-3" id="login-button">
                 <span class="material-icons me-2">login</span>
                 Entrar
             </button>
@@ -70,11 +70,12 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#login-form').on('submit', function(e) {
+    $('#login-button').on('click', function(e) {
+        console.log('Login button clicked');
         e.preventDefault();
-        
-        const $form = $(this);
-        const $submitBtn = $form.find('button[type="submit"]');
+
+        const $form = $('#login-form');
+        const $submitBtn = $(this);
         
         // Get form data
         const formData = {
