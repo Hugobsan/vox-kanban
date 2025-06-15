@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
+use App\Models\Board;
+use App\Models\Column;
 use App\Models\Task;
+use Illuminate\Support\Facades\DB;
 
 class TaskController extends Controller
 {
@@ -29,7 +32,22 @@ class TaskController extends Controller
      */
     public function store(StoreTaskRequest $request)
     {
-        //
+        $column = Column::findOrFail($request->column_id);
+        $this->authorize('update', $column->board);
+        DB::beginTransaction();
+        try {
+            // Armazena a task
+            $task = Task::create($request->validated());
+
+            // Se houver labels, associa à task
+            if ($request->has('labels') && !empty($request->labels)) {
+                $task->labels()->sync($request->labels);
+            }
+
+            return $this->respond()->successResponse($task, 'Task created successfully!', 201);
+        } catch (\Exception $e) {
+            return $this->respond()->errorResponse('Error creating task: ' . $e->getMessage(), 500);
+        }
     }
 
     /**

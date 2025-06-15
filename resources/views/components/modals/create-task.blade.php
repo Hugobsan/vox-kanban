@@ -1,4 +1,40 @@
 <!-- Create Task Modal -->
+<style>
+#task-labels option {
+    padding: 8px 12px;
+    margin: 2px 0;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+#task-labels option[data-color] {
+    position: relative;
+    padding-left: 24px;
+}
+
+#task-labels option[data-color]::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: attr(data-color);
+}
+
+/* Alternativa com border-left colorido */
+#task-labels option[data-color] {
+    border-left: 4px solid;
+    padding-left: 12px;
+}
+
+#task-labels {
+    min-height: 100px;
+}
+</style>
+
 <div class="modal fade" id="createTaskModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -30,7 +66,6 @@
                                 <label for="task-labels" class="form-label">Labels</label>
                                 <div class="input-group">
                                     <select class="form-select" id="task-labels" multiple>
-                                        <!-- Labels will be loaded dynamically -->
                                     </select>
                                     <button type="button" class="btn btn-outline-secondary" onclick="showCreateLabelForm()">
                                         <span class="material-icons">add</span>
@@ -69,31 +104,17 @@
                         
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label for="task-priority" class="form-label">Prioridade</label>
-                                <select class="form-select" id="task-priority" name="priority">
-                                    <option value="low">Baixa</option>
-                                    <option value="medium" selected>Média</option>
-                                    <option value="high">Alta</option>
-                                </select>
-                            </div>
-                            
-                            <div class="mb-3">
                                 <label for="task-due-date" class="form-label">Data de Vencimento</label>
                                 <input type="date" class="form-control" id="task-due-date" name="due_date">
                             </div>
                             
                             <div class="mb-3">
-                                <label for="task-assignees" class="form-label">Responsáveis</label>
-                                <select class="form-select" id="task-assignees" multiple>
+                                <label for="task-assignee" class="form-label">Responsável</label>
+                                <select class="form-select" id="task-assignee" name="assigned_user_id">
+                                    <option value="">Sem responsável</option>
                                     <!-- Board users will be loaded dynamically -->
                                 </select>
-                                <div class="form-text">Selecione os usuários responsáveis pela tarefa.</div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="task-estimated-hours" class="form-label">Estimativa (horas)</label>
-                                <input type="number" class="form-control" id="task-estimated-hours" 
-                                       name="estimated_hours" placeholder="Ex: 8" min="0.5" max="1000" step="0.5">
+                                <div class="form-text">Selecione o usuário responsável pela tarefa.</div>
                             </div>
                         </div>
                     </div>
@@ -120,7 +141,7 @@ $(document).ready(function() {
     
     // Load data when modal is shown
     $('#createTaskModal').on('show.bs.modal', function() {
-        loadBoardLabels();
+        loadBoardLabelsForTask();
         loadBoardUsers();
     });
     
@@ -128,7 +149,7 @@ $(document).ready(function() {
     $('#createTaskModal').on('hidden.bs.modal', function() {
         $('#create-task-form')[0].reset();
         $('#task-labels').empty();
-        $('#task-assignees').empty();
+        $('#task-assignee').empty();
         hideCreateLabelForm();
     });
     
@@ -150,12 +171,10 @@ function createTask() {
     const formData = {
         title: $('#task-title').val().trim(),
         description: $('#task-description').val().trim(),
-        priority: $('#task-priority').val(),
         due_date: $('#task-due-date').val() || null,
-        estimated_hours: $('#task-estimated-hours').val() || null,
         column_id: columnId,
         labels: $('#task-labels').val() || [],
-        assignees: $('#task-assignees').val() || []
+        assigned_user_id: $('#task-assignee').val() || null
     };
     
     // Validation
@@ -171,10 +190,9 @@ function createTask() {
         id: 'temp-' + Date.now(),
         title: formData.title,
         description: formData.description,
-        priority: formData.priority,
         due_date: formData.due_date,
         labels: [], // Will be populated after creation
-        assignees: [],
+        assigned_user_id: formData.assigned_user_id,
         completed: false
     };
     
@@ -231,8 +249,10 @@ function createTask() {
     });
 }
 
-function loadBoardLabels() {
-    if (!currentBoardId) return;
+function loadBoardLabelsForTask() {
+    if (!currentBoardId) {
+        return;
+    }
     
     const token = localStorage.getItem('auth_token');
     
@@ -248,15 +268,13 @@ function loadBoardLabels() {
                 $select.empty();
                 
                 response.data.forEach(label => {
-                    $select.append(`
-                        <option value="${label.id}" style="background-color: ${label.color};">
-                            ${escapeHtml(label.name)}
-                        </option>
-                    `);
+                    const $option = $(`<option value="${label.id}" data-color="${label.color}">${label.name}</option>`);
+                    $option.css('border-left-color', label.color);
+                    $select.append($option);
                 });
             }
         },
-        error: function() {
+        error: function(xhr) {
             // Silently fail - labels are optional
         }
     });
@@ -265,14 +283,17 @@ function loadBoardLabels() {
 function loadBoardUsers() {
     if (!currentBoardData || !currentBoardData.board_users) return;
     
-    const $select = $('#task-assignees');
+    const $select = $('#task-assignee');
     $select.empty();
+    
+    // Add default empty option
+    $select.append('<option value="">Sem responsável</option>');
     
     currentBoardData.board_users.forEach(boardUser => {
         if (boardUser.user) {
             $select.append(`
                 <option value="${boardUser.user.id}">
-                    ${escapeHtml(boardUser.user.name)}
+                    ${boardUser.user.name}
                 </option>
             `);
         }
@@ -316,11 +337,9 @@ function createQuickLabel() {
         success: function(response) {
             if (response.success) {
                 const label = response.data;
-                $('#task-labels').append(`
-                    <option value="${label.id}" style="background-color: ${label.color};" selected>
-                        ${escapeHtml(label.name)}
-                    </option>
-                `);
+                const $option = $(`<option value="${label.id}" data-color="${label.color}" selected>${label.name}</option>`);
+                $option.css('border-left-color', label.color);
+                $('#task-labels').append($option);
                 
                 hideCreateLabelForm();
                 showAlert('Label criada com sucesso!', 'success');

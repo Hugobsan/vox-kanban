@@ -35,7 +35,6 @@ class TaskCard {
     
     render() {
         const labels = this.task.labels || [];
-        const priority = this.task.priority || 'medium';
         const assignees = this.task.assignees || [];
         
         return `
@@ -45,7 +44,7 @@ class TaskCard {
                     ${this.renderLabels(labels)}
                     ${this.renderTitle()}
                     ${this.renderDescription()}
-                    ${this.renderFooter(priority, assignees)}
+                    ${this.renderFooter(assignees)}
                 </div>
             </div>
         `;
@@ -103,11 +102,10 @@ class TaskCard {
         return `<p class="text-muted small mb-2">${escapeHtml(truncated)}</p>`;
     }
     
-    renderFooter(priority, assignees) {
+    renderFooter(assignees) {
         return `
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                    <span class="task-priority priority-${priority}" title="Prioridade ${priority}"></span>
                     ${this.task.due_date ? `<small class="text-muted">${formatDate(this.task.due_date)}</small>` : ''}
                 </div>
                 ${this.renderAssignees(assignees)}

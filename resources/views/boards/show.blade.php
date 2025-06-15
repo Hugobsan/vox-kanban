@@ -17,7 +17,6 @@
                         </a>
                         <div>
                             <h3 class="mb-0" id="board-title">Carregando...</h3>
-                            <p class="text-muted mb-0" id="board-description">Carregando descrição...</p>
                         </div>
                     </div>
                 </div>
@@ -114,6 +113,13 @@
                     <div class="mb-3">
                         <label for="task-description" class="form-label">Descrição</label>
                         <textarea class="form-control" id="task-description" name="description" rows="3" placeholder="Descreva os detalhes da task..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="task-labels" class="form-label">Labels</label>
+                        <select class="form-select" id="task-labels" name="labels[]" multiple>
+                            <!-- Labels serão carregadas dinamicamente -->
+                        </select>
+                        <div class="form-text">Selecione as labels para categorizar a tarefa.</div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
@@ -471,7 +477,6 @@ function loadBoard() {
 function renderBoard(board) {
     // Update header
     $('#board-title').text(board.name);
-    $('#board-description').text(board.description || 'Sem descrição');
     
     // Render columns
     const $container = $('#columns-container');
@@ -684,6 +689,7 @@ function addColumn() {
 
 function showAddTask(columnId) {
     $('#task-column-id').val(columnId);
+    loadBoardLabelsForTask();
     $('#addTaskModal').modal('show');
 }
 

@@ -27,12 +27,6 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="board-description" class="form-label">Descrição (opcional)</label>
-                        <textarea class="form-control" id="board-description" name="description" rows="3" 
-                                  placeholder="Descreva o objetivo deste quadro..." maxlength="1000"></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
                         <label class="form-label">Colunas Iniciais</label>
                         <div id="initial-columns">
                             <div class="input-group mb-2">
@@ -103,8 +97,7 @@ function createBoard() {
     
     const formData = {
         name: $('#board-name').val().trim(),
-        key: $('#board-key').val().trim(),
-        description: $('#board-description').val().trim()
+        key: $('#board-key').val().trim()
     };
     
     // Validation

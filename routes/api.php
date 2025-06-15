@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BoardController;
 use App\Http\Controllers\LabelController;
+use App\Http\Controllers\TaskController;
 
 // Rotas de autenticação (públicas)
 Route::post('/register', [AuthController::class, 'register']);
@@ -27,4 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Rotas de labels
     Route::apiResource('labels', LabelController::class);
+
+    // Rotas de Tasks
+    Route::apiResource('tasks', TaskController::class)->except(['show', 'edit']);
 });

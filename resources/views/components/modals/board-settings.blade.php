@@ -61,11 +61,6 @@
                                             Usada para gerar referências de tarefas (ex: WEB-001)
                                         </div>
                                     </div>
-                                    <div class="mb-3">
-                                        <label for="board-settings-description" class="form-label">Descrição</label>
-                                        <textarea class="form-control" id="board-settings-description" 
-                                                  name="description" rows="3" maxlength="1000"></textarea>
-                                    </div>
                                     <button type="submit" class="btn btn-primary">
                                         <span class="material-icons me-2">save</span>
                                         Salvar Alterações
@@ -262,7 +257,6 @@ function loadBoardSettings() {
     
     $('#board-settings-name').val(currentBoardData.name);
     $('#board-settings-key').val(currentBoardData.key);
-    $('#board-settings-description').val(currentBoardData.description || '');
 }
 
 function saveBoardSettings() {
@@ -272,8 +266,7 @@ function saveBoardSettings() {
     
     const formData = {
         name: $('#board-settings-name').val().trim(),
-        key: $('#board-settings-key').val().trim(),
-        description: $('#board-settings-description').val().trim()
+        key: $('#board-settings-key').val().trim()
     };
     
     setLoading($submitBtn, true);
@@ -291,7 +284,6 @@ function saveBoardSettings() {
                 showAlert('Configurações salvas com sucesso!', 'success');
                 currentBoardData = { ...currentBoardData, ...formData };
                 $('#board-title').text(formData.name);
-                $('#board-description').text(formData.description || 'Sem descrição');
                 
                 // Update board selector
                 $(`#board-selector option[value="${currentBoardId}"]`).text(formData.name);

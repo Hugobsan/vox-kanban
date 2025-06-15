@@ -93,18 +93,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Priority -->
-                            <div class="mb-4">
-                                <h6 class="mb-2">Prioridade</h6>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="task-priority" id="task-priority-indicator"></span>
-                                    <span id="task-priority-text">Média</span>
-                                    <button class="btn btn-sm btn-outline-secondary" onclick="editTaskPriority()">
-                                        <span class="material-icons">edit</span>
-                                    </button>
-                                </div>
-                            </div>
-                            
                             <!-- Assignees -->
                             <div class="mb-4">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -140,24 +128,6 @@
                                     </button>
                                 </div>
                                 <div id="task-due-date-display">Não definida</div>
-                            </div>
-                            
-                            <!-- Time Tracking -->
-                            <div class="mb-4">
-                                <h6 class="mb-2">Tempo</h6>
-                                <div class="small">
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span>Estimado:</span>
-                                        <span id="task-estimated-time">-</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-1">
-                                        <span>Trabalhado:</span>
-                                        <span id="task-worked-time">-</span>
-                                    </div>
-                                    <div class="progress" style="height: 4px;">
-                                        <div class="progress-bar" id="time-progress" style="width: 0%"></div>
-                                    </div>
-                                </div>
                             </div>
                             
                             <!-- Actions -->
@@ -232,16 +202,6 @@ function displayTaskDetails(task) {
     // Status
     $('#task-status').text(task.column?.name || 'Indefinido');
     
-    // Priority
-    const priorityMap = {
-        'low': { text: 'Baixa', class: 'priority-low' },
-        'medium': { text: 'Média', class: 'priority-medium' },
-        'high': { text: 'Alta', class: 'priority-high' }
-    };
-    const priority = priorityMap[task.priority] || priorityMap['medium'];
-    $('#task-priority-indicator').attr('class', `task-priority ${priority.class}`);
-    $('#task-priority-text').text(priority.text);
-    
     // Assignees
     displayTaskAssignees(task.assignees || []);
     
@@ -252,22 +212,6 @@ function displayTaskDetails(task) {
     $('#task-due-date-display').text(
         task.due_date ? formatDate(task.due_date) : 'Não definida'
     );
-    
-    // Time tracking
-    $('#task-estimated-time').text(
-        task.estimated_hours ? `${task.estimated_hours}h` : '-'
-    );
-    $('#task-worked-time').text(
-        task.worked_hours ? `${task.worked_hours}h` : '0h'
-    );
-    
-    // Progress
-    if (task.estimated_hours && task.worked_hours) {
-        const progress = Math.min((task.worked_hours / task.estimated_hours) * 100, 100);
-        $('#time-progress').css('width', `${progress}%`);
-    } else {
-        $('#time-progress').css('width', '0%');
-    }
 }
 
 function displayTaskAssignees(assignees) {

@@ -52,7 +52,6 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h2 class="mb-1" id="board-title">Vox Kanban</h2>
-                        <p class="text-muted mb-0" id="board-description">Selecione um quadro para começar</p>
                     </div>
                     <div class="d-flex gap-2">
                         <button class="btn btn-outline-secondary" onclick="toggleBoardView()" id="view-toggle" style="display: none;">
@@ -227,17 +226,6 @@
     color: white;
     font-weight: 500;
 }
-
-.task-priority {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    display: inline-block;
-}
-
-.priority-low { background-color: #10b981; }
-.priority-medium { background-color: #f59e0b; }
-.priority-high { background-color: #ef4444; }
 
 .column-handle {
     cursor: move;
@@ -460,7 +448,6 @@ function checkIfOwner(boardData) {
 function displayBoard(boardData) {
     // Update header
     $('#board-title').text(boardData.name);
-    $('#board-description').text(boardData.description || 'Sem descrição');
     
     // Show board elements
     $('#board-settings-btn, #view-toggle, #board-settings-link').toggle(isOwner);
@@ -548,14 +535,6 @@ function createTaskElement(task) {
         `<span class="task-label" style="background-color: ${label.color}">${escapeHtml(label.name)}</span>`
     ).join('');
     
-    const priorityColors = {
-        'low': '#10b981',
-        'medium': '#f59e0b', 
-        'high': '#ef4444'
-    };
-    
-    const priorityColor = priorityColors[task.priority] || '#64748b';
-    
     return `
         <div class="kanban-card" data-task-id="${task.id}" onclick="showTaskDetails(${task.id})">
             <div class="card-body p-3">
@@ -564,7 +543,6 @@ function createTaskElement(task) {
                 ${task.description ? `<p class="card-text small text-muted mb-2">${escapeHtml(task.description.substring(0, 100))}${task.description.length > 100 ? '...' : ''}</p>` : ''}
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
-                        <span class="task-priority me-2" style="background-color: ${priorityColor}"></span>
                         <small class="text-muted">#${task.number}</small>
                     </div>
                     ${task.due_date ? `<small class="text-muted">${formatDate(task.due_date)}</small>` : ''}
@@ -601,7 +579,6 @@ function showEmptyState() {
     $('#empty-state').css('display', 'flex');
     $('#kanban-board, #loading-state').css('display', 'none');
     $('#board-title').text('Vox Kanban');
-    $('#board-description').text('Selecione um quadro para começar');
     $('#board-settings-btn, #view-toggle, #board-settings-link').hide();
     currentBoardId = null;
     currentBoardData = null;
