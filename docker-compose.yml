@@ -59,7 +59,7 @@ services:
 
   # Banco de Dados PostgreSQL
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: vox-kanban-postgres
     restart: unless-stopped
     ports:
@@ -77,7 +77,7 @@ services:
 
   # Redis (Cache e Sessions)
   redis:
-    image: redis:7-alpine
+    image: redis:alpine
     container_name: vox-kanban-redis
     restart: unless-stopped
     ports:
@@ -172,7 +172,7 @@ services:
 
   # Node.js para Assets (Vite)
   node:
-    image: node:18-alpine
+    image: node:alpine
     container_name: vox-kanban-node
     working_dir: /var/www
     volumes:

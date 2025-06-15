@@ -68,7 +68,7 @@ install: ## Primeira instalação completa
 	$(DOCKER_COMPOSE) up -d
 	@echo "⏳ Aguardando serviços ficarem prontos..."
 	sleep 10
-	$(DOCKER_EXEC) composer install --no-dev --optimize-autoloader
+	$(DOCKER_EXEC) composer install --optimize-autoloader
 	$(DOCKER_EXEC) php artisan key:generate
 	$(DOCKER_EXEC) php artisan migrate:fresh --seed
 	$(DOCKER_EXEC) php artisan storage:link

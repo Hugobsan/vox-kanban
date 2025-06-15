@@ -25,10 +25,13 @@ RUN apk update && apk add --no-cache \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Criar usuário do sistema para executar comandos do Composer e Artisan
-# Alpine usa adduser em vez de useradd
-RUN adduser -D -s /bin/sh -u $uid -G www-data $user || adduser -D -s /bin/sh $user
-RUN mkdir -p /home/$user/.composer && \
-    chown -R $user:$user /home/$user
+# Alpine: criar grupo e usuário de forma robusta
+RUN addgroup -g 82 -S www-data 2>/dev/null || true
+RUN addgroup -g $uid -S $user 2>/dev/null || true
+RUN adduser -D -s /bin/sh -u $uid -G $user $user 2>/dev/null || true
+RUN adduser $user www-data 2>/dev/null || true
+RUN mkdir -p /home/$user/.composer
+RUN chown -R $user:$user /home/$user
 
 # Definir diretório de trabalho
 WORKDIR /var/www
@@ -47,7 +50,7 @@ RUN mkdir -p /var/log/supervisor && \
     mkdir -p /var/run/supervisor
 
 # Dar permissões apropriadas
-RUN chown -R $user:www-data /var/www
+RUN chown -R $user:$user /var/www
 RUN chmod -R 775 /var/www/storage
 RUN chmod -R 775 /var/www/bootstrap/cache
 

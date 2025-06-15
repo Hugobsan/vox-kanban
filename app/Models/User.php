@@ -45,9 +45,9 @@ class User extends Authenticatable
     /**
      * Todas as atribuições de papéis (incluindo inativas) que pertencem ao usuário.
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function allRoleAssignments(): \Illuminate\Database\Eloquent\Builder
+    public function allRoleAssignments(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(RoleUser::class)->withInactive();
     }
