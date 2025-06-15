@@ -19,7 +19,9 @@ RUN apk update && apk add --no-cache \
     dcron \
     shadow \
     && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip \
+    && pecl install redis \
+    && docker-php-ext-enable redis
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

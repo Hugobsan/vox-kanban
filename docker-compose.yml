@@ -234,11 +234,10 @@ services:
         echo "Laravel Reverb encontrado, iniciando servidor WebSocket...";
         php artisan reverb:start --host=0.0.0.0 --port=8080 --verbose;
       else
-        echo "Laravel Reverb não está instalado. Container ficará aguardando...";
+        echo "Laravel Reverb não está instalado. Container ficará em standby...";
+        tail -f /dev/null;
       fi
       '
-    profiles:
-      - reverb  # Only run with --profile reverb
 
 networks:
   vox-kanban:

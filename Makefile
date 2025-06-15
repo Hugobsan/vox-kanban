@@ -62,12 +62,12 @@ test: ## Executa os testes
 	$(DOCKER_EXEC) php artisan test
 
 install: ## Primeira instalação completa
-	@echo "🚀 Iniciando instalação do Vox Kanban..."
+	@echo "🚀 Iniciando instalação completa do Vox Kanban..."
 	cp .env.docker .env
 	$(DOCKER_COMPOSE) build
 	$(DOCKER_COMPOSE) up -d
 	@echo "⏳ Aguardando serviços ficarem prontos..."
-	sleep 10
+	sleep 15
 	$(DOCKER_EXEC) composer install --optimize-autoloader
 	$(DOCKER_EXEC) php artisan key:generate
 	$(DOCKER_EXEC) php artisan migrate:fresh --seed
@@ -75,11 +75,18 @@ install: ## Primeira instalação completa
 	$(DOCKER_EXEC) php artisan config:cache
 	$(DOCKER_EXEC) php artisan route:cache
 	$(DOCKER_EXEC) php artisan view:cache
-	@echo "✅ Instalação concluída!"
+	@echo "🔴 Configurando Redis..."
+	@$(MAKE) setup-redis
+	@echo "⚡ Configurando Reverb..."
+	@$(MAKE) setup-reverb
+	@echo "🧪 Testando conexões..."
+	@$(MAKE) test-connections
+	@echo "✅ Instalação completa concluída!"
 	@echo "📱 Aplicação: http://localhost:8000"
 	@echo "📧 MailHog: http://localhost:8025"
 	@echo "🗄️  PostgreSQL: localhost:5432"
 	@echo "🔴 Redis: localhost:6379"
+	@echo "⚡ Reverb WebSocket: ws://localhost:8080"
 
 setup-dev: ## Configuração para desenvolvimento
 	@echo "🔧 Configurando ambiente de desenvolvimento..."
@@ -116,3 +123,37 @@ redis-cli: ## Acessa o Redis CLI
 permissions: ## Corrige permissões de arquivos
 	$(DOCKER_EXEC) chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 	$(DOCKER_EXEC) chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+setup-redis: install ## Configura e testa Redis
+	@echo "🔴 Configurando Redis..."
+	$(DOCKER_EXEC) php artisan config:cache
+	@echo "🧪 Testando conexão Redis..."
+	$(DOCKER_EXEC) php -r "echo 'Testando Redis: '; try { \$$redis = new Redis(); \$$redis->connect('redis', 6379); echo 'OK - Conectado!\n'; \$$redis->set('test', 'success'); echo 'Teste write: ' . \$$redis->get('test') . '\n'; } catch (Exception \$$e) { echo 'ERRO: ' . \$$e->getMessage() . '\n'; }"
+
+setup-reverb: install ## Configura Laravel Reverb
+	@echo "⚡ Configurando Laravel Reverb..."
+	$(DOCKER_EXEC) php artisan reverb:install --no-interaction || echo "Reverb já instalado"
+	$(DOCKER_EXEC) php artisan config:cache
+	@echo "✅ Reverb configurado!"
+
+test-connections: install ## Testa todas as conexões (DB, Redis, etc)
+	@echo "🧪 Testando conexões..."
+	@echo "📊 Testando PostgreSQL..."
+	$(DOCKER_EXEC) php artisan tinker --execute="DB::connection()->getPdo(); echo 'PostgreSQL: OK\n';"
+	@echo "🔴 Testando Redis..."
+	$(DOCKER_EXEC) php -r "try { \$$redis = new Redis(); \$$redis->connect('redis', 6379); echo 'Redis: OK\n'; } catch (Exception \$$e) { echo 'Redis: ERRO - ' . \$$e->getMessage() . '\n'; }"
+	@echo "📧 Testando MailHog..."
+	$(DOCKER_EXEC) php artisan tinker --execute="Mail::raw('Test', function(\$$message) { \$$message->to('test@example.com')->subject('Test'); }); echo 'MailHog: OK\n';" || echo "MailHog: Verifique configuração"
+
+queue-work: ## Inicia worker da queue manualmente
+	$(DOCKER_EXEC) php artisan queue:work --verbose --tries=3 --timeout=90
+
+reverb-start: ## Inicia servidor Reverb manualmente
+	$(DOCKER_EXEC) php artisan reverb:start --host=0.0.0.0 --port=8080
+
+logs-reverb: ## Mostra logs do Reverb
+	$(DOCKER_COMPOSE) logs -f reverb
+
+status: install ## Mostra status de todos os serviços
+	@echo "📊 Status dos serviços:"
+	$(DOCKER_COMPOSE) ps
