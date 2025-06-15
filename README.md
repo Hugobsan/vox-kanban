@@ -1,66 +1,185 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <a href="https://laravel.com" target="_blank">
+    <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo">
+  </a>
 </p>
 
-## About Laravel
+# Vox Kanban
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Vox Kanban** é um sistema completo de gerenciamento de quadros Kanban, colaborativo e moderno, desenvolvido em Laravel, com frontend desacoplado via Vite. A infraestrutura já está preparada para integração em tempo real usando WebSockets (Laravel Reverb) e cache/filas com Redis, mas **até o momento não há nenhum channel implementado com Reverb nem mecanismos explícitos de cache utilizando Redis** — esses recursos foram planejados para uso futuro, caso houvesse tempo hábil.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+> **Nota:** A infraestrutura Docker Compose utilizada neste projeto foi reaproveitada e adaptada de um projeto pessoal anterior, visando agilidade e robustez no setup do ambiente.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 🚀 Tecnologias Utilizadas
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- **Laravel 10+** (Backend, API REST, autenticação, filas, eventos)
+- **PHP 8.2 (FPM/Alpine)**
+- **PostgreSQL 16** (Banco de dados relacional)
+- **Redis** (Cache, filas, sessões)
+- **Nginx** (Servidor web)
+- **Vite + Node.js** (Build e hot reload do frontend)
+- **Bootstrap 5** (Estilização e componentes UI)
+- **JQuery & Ajax** (Interações dinâmicas)
+- **JQuery UI** (Componentes Drag & Drop)
+- **Material Icons** (Ícones modernos)
+- **MailHog** (SMTP fake para desenvolvimento)
+- **Laravel Reverb** (WebSockets para notificações em tempo real)
+- **Docker & Docker Compose** (Ambiente isolado e replicável)
+- **Supervisor** (Gerenciamento de processos: queue, scheduler)
+- **Makefile** (Automação de comandos)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 📋 Funcionalidades Principais
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- Gerenciamento de quadros Kanban com múltiplos usuários
+- Permissões e papéis customizáveis por board
+- Colunas, tarefas, etiquetas, comentários
+- Sistema de convites e onboarding
+- API RESTful para conexão com frontend desacoplado
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## 🏗️ Estrutura do Projeto
 
-## Contributing
+O projeto já vem pronto para rodar em ambientes de desenvolvimento e produção, com ou sem Docker. Abaixo estão as instruções para cada cenário.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 🐳 Instalação e Execução (Desenvolvimento com Docker)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Pré-requisitos
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
+- [Make](https://www.gnu.org/software/make/) (opcional, mas recomendado)
 
-## Security Vulnerabilities
+### Passos Rápidos
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/Hugobsan/vox-kanban.git
+   cd vox-kanban
+   ```
+2. Instale e suba tudo com um comando:
+   ```bash
+   make install
+   ```
+   > Isso irá copiar o .env, buildar a imagem, subir os containers, instalar dependências, rodar migrações, seeders e preparar o ambiente.
 
-## License
+3. Acesse:
+   - Aplicação: [http://localhost:8000](http://localhost:8000)
+   - MailHog: [http://localhost:8025](http://localhost:8025)
+   - Vite Dev (frontend): [http://localhost:5173](http://localhost:5173) (se rodando em modo dev)
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+#### Ambiente de Desenvolvimento com Hot Reload (Vite + Node.js)
+
+Para desenvolvimento frontend com hot reload:
+
+```bash
+make setup-dev
+```
+> Isso sobe o serviço Node.js e ativa o Vite em modo desenvolvimento.
+
+#### Comandos Úteis
+
+- `make shell` — entra no shell do container da aplicação
+- `make artisan ARGS="migrate"` — executa comandos do Artisan
+- `make composer ARGS="install"` — executa comandos do Composer
+- `make test` — executa os testes automatizados
+- `make logs` — mostra logs de todos os serviços
+
+Veja mais comandos no próprio [Makefile](Makefile) e no [DOCKER.md](DOCKER.md).
+
+---
+
+## 🏭 Instalação e Execução (Produção com Docker)
+
+1. Configure seu arquivo `.env` de produção (baseie-se no `.env.docker` e ajuste variáveis sensíveis)
+2. Faça o build da imagem e suba os serviços:
+   ```bash
+   make build
+   make up
+   ```
+3. Execute as migrações e seeders (se necessário):
+   ```bash
+   make artisan ARGS="migrate --force"
+   make artisan ARGS="db:seed --force"
+   ```
+4. Gere as chaves e caches:
+   ```bash
+   make artisan ARGS="key:generate"
+   make artisan ARGS="config:cache"
+   make artisan ARGS="route:cache"
+   make artisan ARGS="view:cache"
+   ```
+5. Acesse a aplicação normalmente em [http://localhost:8000](http://localhost:8000) (ou configure seu domínio/SSL conforme necessário).
+
+> **Dicas:**
+> - Altere as credenciais padrão do banco e Redis para produção.
+> - Configure HTTPS e firewall.
+> - Use volumes persistentes para dados.
+
+---
+
+## 💻 Instalação e Execução (Desenvolvimento sem Docker)
+
+> **Recomendado apenas para quem já tem PHP, Composer, Node.js, PostgreSQL e Redis instalados localmente.**
+
+1. Instale as dependências do backend:
+   ```bash
+   composer install
+   ```
+2. Instale as dependências do frontend:
+   ```bash
+   npm install
+   ```
+3. Copie o arquivo de ambiente:
+   ```bash
+   cp .env.example .env
+   # ou use .env.docker como base
+   ```
+4. Configure as variáveis de ambiente conforme seu setup local (DB, Redis, etc).
+5. Gere a chave da aplicação:
+   ```bash
+   php artisan key:generate
+   ```
+6. Rode as migrações e seeders:
+   ```bash
+   php artisan migrate --seed
+   ```
+7. Suba o servidor Laravel:
+   ```bash
+   php artisan serve
+   ```
+8. Em outro terminal, rode o Vite para o frontend:
+   ```bash
+   npm run dev
+   ```
+
+#### Serviços necessários localmente:
+- PHP >= 8.2 com extensões (pdo_pgsql, redis, etc)
+- Composer
+- Node.js >= 18
+- PostgreSQL >= 13
+- Redis
+
+---
+
+## 📝 Notas e Dicas
+
+- O ambiente Docker já está pronto para uso, com scripts automatizados para desenvolvimento e produção.
+- Para resetar tudo, use `make clean` (remove containers e volumes).
+- Para backup/restore do banco: `make backup-db` e `make restore-db FILE=backup.sql`
+- Para logs detalhados: `make logs-app`, `make logs-queue`, `make logs-reverb`, etc.
+- O WebSocket (Reverb) já está pré-configurado, basta instalar o pacote Laravel Reverb se desejar usar.
+- Veja [DOCKER.md](DOCKER.md) para detalhes avançados de infraestrutura.
+
+---
+
+## 📄 Licença
+
+Este projeto segue a licença MIT. Veja o arquivo LICENSE para mais detalhes.
