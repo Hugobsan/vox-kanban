@@ -5,7 +5,7 @@
 @section('main-class', 'container-fluid p-0')
 
 @section('content')
-<div class="row g-0 min-vh-100">
+<div class="row g-0 vh-100">
     <!-- Sidebar -->
     <div class="col-md-3 col-lg-2">
         <div class="sidebar p-3">
@@ -262,7 +262,6 @@
     opacity: 0;
     transition: opacity 0.2s ease;
 }
-
 .kanban-card:hover .task-dropdown {
     opacity: 1;
 }
@@ -288,15 +287,17 @@ let currentBoardData = null;
 let isOwner = false;
 
 $(document).ready(function() {
-    loadUserBoards();
-    initializeSortable();
-    
-    // Check for board ID in URL
+    // Check for board ID in URL first
     const urlParams = new URLSearchParams(window.location.search);
-    const boardId = urlParams.get('board');
-    if (boardId) {
-        selectBoardById(boardId);
-    }
+    const boardIdFromUrl = urlParams.get('board');
+    
+    loadUserBoards().then(() => {
+        if (boardIdFromUrl) {
+            selectBoardById(boardIdFromUrl);
+        }
+    });
+    
+    initializeSortable();
 });
 
 function loadUserBoards() {
@@ -304,18 +305,36 @@ function loadUserBoards() {
     
     if (!token) {
         window.location.href = '/login';
-        return;
+        return Promise.reject('No token');
     }
     
-    $.ajax({
+    return $.ajax({
         url: '/api/boards',
         method: 'GET',
         headers: {
             'Authorization': 'Bearer ' + token
         },
         success: function(response) {
-            if (response.success) {
-                populateBoardSelector(response.data);
+            // A resposta contém um objeto com a propriedade 'boards'
+            if (response && response.boards) {
+                const boards = response.boards;
+                populateBoardSelector(boards);
+                
+                // Se houver apenas um board, selecione automaticamente
+                if (boards.length === 1) {
+                    selectBoardById(boards[0].id);
+                }
+            } else if (response.success && response.data) {
+                // Fallback para caso a resposta venha em outro formato
+                const boards = response.data || [];
+                populateBoardSelector(boards);
+                
+                if (boards.length === 1) {
+                    selectBoardById(boards[0].id);
+                }
+            } else {
+                showAlert('Formato de resposta inesperado.', 'warning');
+                showEmptyState();
             }
         },
         error: function(xhr) {
@@ -323,7 +342,8 @@ function loadUserBoards() {
                 localStorage.removeItem('auth_token');
                 window.location.href = '/login';
             } else {
-                NotificationService.error('Erro ao carregar quadros.');
+                const errorMessage = xhr.responseJSON?.message || 'Erro ao carregar quadros.';
+                showAlert(errorMessage, 'danger');
             }
         }
     });
@@ -331,10 +351,27 @@ function loadUserBoards() {
 
 function populateBoardSelector(boards) {
     const $selector = $('#board-selector');
+    
+    if (!$selector.length) {
+        return;
+    }
+    
     $selector.empty().append('<option value="">Selecione um quadro...</option>');
     
-    boards.forEach(board => {
-        $selector.append(`<option value="${board.id}">${escapeHtml(board.name)}</option>`);
+    if (!boards || !Array.isArray(boards)) {
+        return;
+    }
+    
+    if (boards.length === 0) {
+        $selector.append('<option value="" disabled>Nenhum quadro encontrado</option>');
+        return;
+    }
+    
+    boards.forEach((board) => {
+        if (board.id && board.name) {
+            const option = `<option value="${board.id}">${escapeHtml(board.name)}</option>`;
+            $selector.append(option);
+        }
     });
 }
 
@@ -348,7 +385,9 @@ function selectBoard() {
 }
 
 function selectBoardById(boardId) {
-    if (currentBoardId === boardId) return;
+    if (currentBoardId === boardId) {
+        return;
+    }
     
     currentBoardId = boardId;
     $('#board-selector').val(boardId);
@@ -367,15 +406,40 @@ function loadBoardData(boardId) {
             'Authorization': 'Bearer ' + token
         },
         success: function(response) {
-            if (response.success) {
-                currentBoardData = response.data;
-                isOwner = checkIfOwner(response.data);
-                displayBoard(response.data);
+            // A resposta contém um objeto com a propriedade 'board'
+            if (response && response.board) {
+                const boardData = response.board;
+                currentBoardData = boardData;
+                isOwner = checkIfOwner(boardData);
+                displayBoard(boardData);
                 updateUrlWithBoard(boardId);
+            } else if (response.success && response.data) {
+                // Fallback para caso a resposta venha em outro formato
+                const boardData = response.data;
+                currentBoardData = boardData;
+                isOwner = checkIfOwner(boardData);
+                displayBoard(boardData);
+                updateUrlWithBoard(boardId);
+            } else {
+                showAlert('Formato de resposta inesperado.', 'warning');
+                showEmptyState();
             }
         },
         error: function(xhr) {
-            NotificationService.error('Erro ao carregar dados do quadro.');
+            let message = 'Erro ao carregar dados do quadro.';
+            
+            if (xhr.status === 401) {
+                message = 'Sessão expirada. Faça login novamente.';
+                localStorage.removeItem('auth_token');
+                window.location.href = '/login';
+                return;
+            }
+            
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                message = xhr.responseJSON.message;
+            }
+            
+            showAlert(message, 'danger');
             showEmptyState();
         },
         complete: function() {
@@ -403,37 +467,111 @@ function displayBoard(boardData) {
     
     // Display columns
     displayColumns(boardData.columns || []);
-    
-    // Show board
-    showBoardState();
 }
 
 function displayColumns(columns) {
     const $container = $('#columns-container');
     $container.empty();
     
+    if (!columns || !Array.isArray(columns)) {
+        return;
+    }
+    
     // Sort columns by order
     columns.sort((a, b) => (a.order || 0) - (b.order || 0));
     
-    // Add existing columns using KanbanColumn class
+    // Add existing columns
     columns.forEach(column => {
-        const columnElement = new KanbanColumn(column).render();
+        const columnElement = createColumnElement(column);
         $container.append(columnElement);
     });
     
-    // Add ghost column for creating new columns
-    $container.append(createGhostColumn());
+    // Add ghost column for creating new columns (apenas se for owner)
+    if (isOwner) {
+        $container.append(createGhostColumn());
+    }
+    
+    // Force show kanban board
+    $('#empty-state').remove(); // Remove completamente do DOM temporariamente
+    $('#kanban-board').show().css({
+        'display': 'block !important',
+        'visibility': 'visible',
+        'opacity': '1'
+    });
+    
+    // Show kanban board
+    showBoardState();
     
     // Reinitialize sortable
     initializeSortable();
 }
 
 function createColumnElement(column) {
-    return new KanbanColumn(column).render();
+    const tasks = column.tasks || [];
+    const tasksHtml = tasks.map(task => createTaskElement(task)).join('');
+    
+    const columnHtml = `
+        <div class="kanban-column" data-column-id="${column.id}">
+            <div class="kanban-column-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <span class="column-handle material-icons me-2" style="cursor: move;">drag_indicator</span>
+                    <h6 class="mb-0 fw-bold">${escapeHtml(column.name)}</h6>
+                    <span class="badge bg-secondary ms-2">${tasks.length}</span>
+                </div>
+                ${isOwner ? `
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                        <span class="material-icons">more_vert</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="editColumn(${column.id})">Editar</a></li>
+                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteColumn(${column.id})">Excluir</a></li>
+                    </ul>
+                </div>
+                ` : ''}
+            </div>
+            <div class="kanban-column-body">
+                ${tasksHtml}
+                ${createGhostTask(column.id)}
+            </div>
+        </div>
+    `;
+    
+    return columnHtml;
 }
 
 function createTaskElement(task) {
-    return new TaskCard(task).render();
+    if (!task) return '';
+    
+    const labels = task.labels || [];
+    const labelsHtml = labels.map(label => 
+        `<span class="task-label" style="background-color: ${label.color}">${escapeHtml(label.name)}</span>`
+    ).join('');
+    
+    const priorityColors = {
+        'low': '#10b981',
+        'medium': '#f59e0b', 
+        'high': '#ef4444'
+    };
+    
+    const priorityColor = priorityColors[task.priority] || '#64748b';
+    
+    return `
+        <div class="kanban-card" data-task-id="${task.id}" onclick="showTaskDetails(${task.id})">
+            <div class="card-body p-3">
+                ${labelsHtml ? `<div class="task-labels mb-2">${labelsHtml}</div>` : ''}
+                <h6 class="card-title mb-2">${escapeHtml(task.title)}</h6>
+                ${task.description ? `<p class="card-text small text-muted mb-2">${escapeHtml(task.description.substring(0, 100))}${task.description.length > 100 ? '...' : ''}</p>` : ''}
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <span class="task-priority me-2" style="background-color: ${priorityColor}"></span>
+                        <small class="text-muted">#${task.number}</small>
+                    </div>
+                    ${task.due_date ? `<small class="text-muted">${formatDate(task.due_date)}</small>` : ''}
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function createGhostTask(columnId) {
@@ -460,8 +598,8 @@ function createGhostColumn() {
 }
 
 function showEmptyState() {
-    $('#empty-state').show();
-    $('#kanban-board, #loading-state').hide();
+    $('#empty-state').css('display', 'flex');
+    $('#kanban-board, #loading-state').css('display', 'none');
     $('#board-title').text('Vox Kanban');
     $('#board-description').text('Selecione um quadro para começar');
     $('#board-settings-btn, #view-toggle, #board-settings-link').hide();
@@ -470,13 +608,14 @@ function showEmptyState() {
 }
 
 function showBoardState() {
-    $('#kanban-board').show();
-    $('#empty-state, #loading-state').hide();
+    $('#empty-state').css('display', 'none');
+    $('#loading-state').css('display', 'none');
+    $('#kanban-board').css('display', 'block');
 }
 
 function showLoadingState() {
-    $('#loading-state').show();
-    $('#empty-state, #kanban-board').hide();
+    $('#loading-state').css('display', 'flex');
+    $('#empty-state, #kanban-board').css('display', 'none');
 }
 
 function hideLoadingState() {
