@@ -18,7 +18,7 @@
 
 ## 🚀 Tecnologias Utilizadas
 
-- **Laravel 10+** (Backend, API REST, autenticação, filas, eventos)
+- **Laravel 11+** (Backend, API REST, autenticação, filas, eventos)
 - **PHP 8.2 (FPM/Alpine)**
 - **PostgreSQL 16** (Banco de dados relacional)
 - **Redis** (Cache, filas, sessões)
