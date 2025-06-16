@@ -10,3 +10,8 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
  */
 
 import './echo';
+
+/**
+ * Import board real-time functionality
+ */
+import './board-realtime';

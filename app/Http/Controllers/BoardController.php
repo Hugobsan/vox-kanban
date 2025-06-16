@@ -145,4 +145,24 @@ class BoardController extends Controller
             return $this->respond()->errorResponse('Erro ao excluir quadro: ' . $e->getMessage(), 500);
         }
     }
+
+    /**
+     * Connect to board real-time channel
+     */
+    public function connect(Request $request, Board $board)
+    {
+        $user = $request->user();
+        
+        // Check if user has access to this board
+        if (!$board->hasUser($user->id)) {
+            return $this->respond()->errorResponse('Acesso negado a este quadro.', 403);
+        }
+
+        // Return board data with channel info for real-time connection
+        return $this->respond()->successResponse([
+            'board_id' => $board->id,
+            'channel' => "board.{$board->id}",
+            'user_id' => $user->id,
+        ], 'Conectado ao canal do quadro com sucesso.');
+    }
 }

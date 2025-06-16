@@ -398,6 +398,11 @@ function selectBoardById(boardId) {
     
     showLoadingState();
     loadBoardData(boardId);
+    
+    // Conectar ao canal real-time do board
+    if (typeof window.connectToBoard === 'function') {
+        window.connectToBoard(boardId);
+    }
 }
 
 function loadBoardData(boardId) {

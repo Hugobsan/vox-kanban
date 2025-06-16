@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\RoleInBoard;
+use App\Observers\BoardObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Str;
 
+#[ObservedBy([BoardObserver::class])]
 class Board extends Model
 {
     /** @use HasFactory<\Database\Factories\BoardFactory> */

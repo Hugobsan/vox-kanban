@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->statefulApi();
+        // Adicionar middleware para desabilitar CSP em desenvolvimento
+        $middleware->web(append: [
+            \App\Http\Middleware\DisableCSP::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

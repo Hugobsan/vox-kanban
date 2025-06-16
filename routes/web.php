@@ -17,6 +17,11 @@ Route::get('/register', function () {
     return view('auth.register');
 })->name('register');
 
+// Broadcasting authentication route
+Route::middleware(['auth', 'web'])->post('/broadcasting/auth', function () {
+    return Illuminate\Support\Facades\Broadcast::auth(request());
+})->name('broadcasting.auth');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [BoardController::class, 'index'])->name('dashboard');
 });

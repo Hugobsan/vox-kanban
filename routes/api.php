@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Rotas de quadros
     Route::apiResource('boards', BoardController::class);
+    Route::post('boards/{board}/connect', [BoardController::class, 'connect']);
     
     // labels de um board específico
     Route::apiResource('boards.labels', LabelController::class)->only(['index']);
